@@ -247,10 +247,10 @@ bool WhoisEvent::parseData()
 
         and fails as soon as the packet is not too well-formed.
         Although this should not be too much of a problem if the protocol doesn't change,
-        it _can_ change. We should mull on a better wat to parse this. */
+        it _can_ change. We should mull on a better way to parse this. */
 
 #   ifdef MNLIB_DEBUG_BUILD
-#      define FAIL()    qCritical("%s: Parse error in whois packet. Line: '%s'", __FUNCTION__, line.toLatin1().data());\
+#      define FAIL()    qCritical("%s: Parse error in whois packet. Line: '%s'", __FUNCTION__, qPrintable(line));\
                         return false
 #   else
 #      define FAIL()    return false

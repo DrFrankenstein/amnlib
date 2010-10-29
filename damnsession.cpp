@@ -69,7 +69,7 @@ void dAmnSession::authenticate(const QString& username, const QString& password,
 
     http->post(request, ident_str.toAscii());
 
-    MNLIB_DEBUG("Requesting authentication for %s", username.toLatin1().data());
+    MNLIB_DEBUG("Requesting authentication for %s", qPrintable(username));
 }
 
 void dAmnSession::handleSslErrors(QNetworkReply* reply, QList<QSslError> errors)
@@ -78,7 +78,7 @@ void dAmnSession::handleSslErrors(QNetworkReply* reply, QList<QSslError> errors)
 #if MNLIB_DEBUG_BUILD
     foreach(QSslError error, errors)
     {
-        MNLIB_DEBUG("%s", error.errorString().toLatin1().data());
+        MNLIB_DEBUG("%s", qPrintable(error.errorString()));
     }
 #else
     Q_UNUSED(errors)
@@ -356,7 +356,7 @@ void dAmnSession::handleProperty(const dAmnPacket& packet)
     if(!this->chatrooms.contains(idstring))
     {
         MNLIB_WARN("Got a property of chatroom %s that haven't joined.",
-                   event.getChatroom().toString().toLatin1().constData());
+                   qPrintable(event.getChatroom().toString()));
         return;
     }
 
@@ -367,6 +367,6 @@ void dAmnSession::handleProperty(const dAmnPacket& packet)
     case PropertyEvent::title:
         this->chatrooms[idstring]->setTitle(event.getValue());
     case PropertyEvent::privclasses:
-
+        ; // TODO
     }
 }

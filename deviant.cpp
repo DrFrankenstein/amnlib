@@ -91,5 +91,5 @@ QUrl Deviant::getIconUrl() const
 
 QUrl Deviant::getProfileUrl() const
 {
-    return QUrl(tr("http://%1/").arg(this->name.toLower()));
+    return QUrl(tr("http://%1.deviantart.com/").arg(this->name.toLower()));
 }
