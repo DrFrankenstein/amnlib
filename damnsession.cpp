@@ -125,7 +125,8 @@ void dAmnSession::gotAuthToken(QNetworkReply* reply)
         MNLIB_WARN("CAN'T NOM COOKIE :(");
     }
 
-    //delete http; // HACK: cause of a segfault further in the execution.
+    http->deleteLater();
+    reply->deleteLater();
 }
 
 const QString& dAmnSession::getUserName() const
