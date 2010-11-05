@@ -130,40 +130,40 @@ private:
     void login();
     void sendCredentials();
 
-    void handleHandshake(const dAmnPacket& packet);
-    void handleLogin(const dAmnPacket& packet);
+    void handleHandshake(dAmnPacket& packet);
+    void handleLogin(dAmnPacket& packet);
 
-    void handleJoin(const dAmnPacket& packet);
-    void handlePart(const dAmnPacket& packet);
+    void handleJoin(dAmnPacket& packet);
+    void handlePart(dAmnPacket& packet);
 
     void handlePing();
 
-    void handleProperty(const dAmnPacket& packet);
-    void handleWhois(const dAmnPacket& packet);
+    void handleProperty(dAmnPacket& packet);
+    void handleWhois(dAmnPacket& packet);
 
-    void handleMsg(const dAmnPacket& packet);
-    void handleAction(const dAmnPacket& packet);
+    void handleMsg(dAmnPacket& packet);
+    void handleAction(dAmnPacket& packet);
 
-    void handlePeerJoin(const dAmnPacket& packet);
-    void handlePeerPart(const dAmnPacket& packet);
-    void handlePeerKick(const dAmnPacket& packet);
+    void handlePeerJoin(dAmnPacket& packet);
+    void handlePeerPart(dAmnPacket& packet);
+    void handlePeerKick(dAmnPacket& packet);
 
-    void handlePrivchg(const dAmnPacket& packet);
-    void handlePrivUpdate(const dAmnPacket& packet);
-    void handlePrivMove(const dAmnPacket& packet);
-    void handlePrivRemove(const dAmnPacket& packet);
+    void handlePrivchg(dAmnPacket& packet);
+    void handlePrivUpdate(dAmnPacket& packet);
+    void handlePrivMove(dAmnPacket& packet);
+    void handlePrivRemove(dAmnPacket& packet);
 
-    void handlePrivShow(const dAmnPacket& packet);
-    void handlePrivUsers(const dAmnPacket& packet);
+    void handlePrivShow(dAmnPacket& packet);
+    void handlePrivUsers(dAmnPacket& packet);
 
-    void handkeKick(const dAmnPacket& packet);
-    void handleDisconnect(const dAmnPacket& packet);
+    void handkeKick(dAmnPacket& packet);
+    void handleDisconnect(dAmnPacket& packet);
 
-    void handleSendError(const dAmnPacket& packet);
-    void handleKickError(const dAmnPacket& packet);
-    void handleGetError(const dAmnPacket& packet);
-    void handleSetError(const dAmnPacket& packetr);
-    void handleKillError(const dAmnPacket& packet);
+    void handleSendError(dAmnPacket& packet);
+    void handleKickError(dAmnPacket& packet);
+    void handleGetError(dAmnPacket& packet);
+    void handleSetError(dAmnPacket& packetr);
+    void handleKillError(dAmnPacket& packet);
 };
 
 #endif // DAMNSESSION_H

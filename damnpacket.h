@@ -84,8 +84,7 @@ public:
 
     QByteArray toByteArray() const;
 
-    dAmnPacket* getSubPacket();
-    dAmnPacket* getSubPacket() const;
+    dAmnPacket& getSubPacket();
 
     // Utility functions
     static QPair<QString, QString> parsePair(const QString& line);

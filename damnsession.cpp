@@ -262,7 +262,7 @@ void dAmnSession::quit()
     this->send(packet);
 }
 
-void dAmnSession::handleHandshake(const dAmnPacket& packet)
+void dAmnSession::handleHandshake(dAmnPacket& packet)
 {
     HandshakeEvent event (this, packet);
 
@@ -286,7 +286,7 @@ void dAmnSession::sendCredentials()
     this->send(loginPacket);
 }
 
-void dAmnSession::handleLogin(const dAmnPacket& packet)
+void dAmnSession::handleLogin(dAmnPacket& packet)
 {
     LoginEvent event (this, packet);
 
@@ -309,7 +309,7 @@ void dAmnSession::handleLogin(const dAmnPacket& packet)
     emit loggedIn(event);
 }
 
-void dAmnSession::handleJoin(const dAmnPacket& packet)
+void dAmnSession::handleJoin(dAmnPacket& packet)
 {
     JoinedEvent event (this, packet);
 
@@ -329,7 +329,7 @@ void dAmnSession::handleJoin(const dAmnPacket& packet)
     emit joined(event);
 }
 
-void dAmnSession::handlePart(const dAmnPacket& packet)
+void dAmnSession::handlePart(dAmnPacket& packet)
 {
     PartedEvent event (this, packet);
 
@@ -348,14 +348,15 @@ void dAmnSession::handlePing()
     emit ping();
 }
 
-void dAmnSession::handleProperty(const dAmnPacket& packet)
+void dAmnSession::handleProperty(dAmnPacket& packet)
 {
     PropertyEvent event (this, packet);
     QString idstring = event.getChatroom().toIdString();
 
     if(!this->chatrooms.contains(idstring))
     {
-        MNLIB_WARN("Got a property of chatroom %s that haven't joined.",
+        MNLIB_WARN("Got property %s of chatroom %s that we haven't joined.",
+                   qPrintable(event.getPropertyString()),
                    qPrintable(event.getChatroom().toString()));
         return;
     }

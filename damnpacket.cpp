@@ -161,7 +161,7 @@ const QString& dAmnPacket::getData() const
     return this->data;
 }
 
-dAmnPacket* dAmnPacket::getSubPacket()
+dAmnPacket& dAmnPacket::getSubPacket()
 {
     if(!this->subpacket)
     {
@@ -169,32 +169,13 @@ dAmnPacket* dAmnPacket::getSubPacket()
         {
             this->subpacket = new dAmnPacket(this->session(), this->data.toLatin1());
         }
-        catch(std::bad_alloc bax)
+        catch(std::bad_alloc)
         {
             MNLIB_FAIL("Couldn't allocate subpacket!");
-            return NULL;
         }
     }
 
-    return this->subpacket;
-}
-
-dAmnPacket* dAmnPacket::getSubPacket() const
-{   // We can't cache our subpacket since we're behind const.
-    if(!this->subpacket)
-    {
-        try
-        {
-            return new dAmnPacket(this->session(), this->data.toLatin1());
-        }
-        catch(std::bad_alloc bax)
-        {
-            MNLIB_FAIL("Couldn't allocate subpacket!");
-            return NULL;
-        }
-    }
-
-    return this->subpacket;
+    return *this->subpacket;
 }
 
 QPair<QString, QString> dAmnPacket::parsePair(const QString& line)
