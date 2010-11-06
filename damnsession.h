@@ -91,79 +91,79 @@ public:
 
 signals:
     // Incoming packet signals
-    void handshake(const HandshakeEvent& event);
-    void loggedIn(const LoginEvent& event);
+    void handshake(const HandshakeEvent* event);
+    void loggedIn(const LoginEvent* event);
 
-    void joined(const JoinedEvent& event);
-    void parted(const PartedEvent& event);
+    void joined(const JoinedEvent* event);
+    void parted(const PartedEvent* event);
 
     void ping();
 
-    void gotProperty(const PropertyEvent& event);
-    void gotWhois(const WhoisEvent& event);
+    void gotProperty(const PropertyEvent* event);
+    void gotWhois(const WhoisEvent* event);
 
-    void gotMsg(const MsgEvent& event);
-    void gotAction(const ActionEvent& event);
+    void gotMsg(const MsgEvent* event);
+    void gotAction(const ActionEvent* event);
 
-    void peerJoined(const JoinEvent& event);
-    void peerParted(const PartEvent& event);
-    void peerKicked(const KickEvent& event);
+    void peerJoined(const JoinEvent* event);
+    void peerParted(const PartEvent* event);
+    void peerKicked(const KickEvent* event);
 
-    void privchged(const PrivchgEvent& event);
-    void privUpdated(const PrivUpdateEvent& event);
-    void privMoved(const PrivMoveEvent& event);
-    void privRemoved(const PrivRemoveEvent& event);
+    void privchged(const PrivchgEvent* event);
+    void privUpdated(const PrivUpdateEvent* event);
+    void privMoved(const PrivMoveEvent* event);
+    void privRemoved(const PrivRemoveEvent* event);
 
-    void gotPrivShow(const PrivShowEvent& event);
-    void gotPrivUsers(const PrivUsersEvent& event);
+    void gotPrivShow(const PrivShowEvent* event);
+    void gotPrivUsers(const PrivUsersEvent* event);
 
-    void kicked(const KickedEvent& event);
-    void disconnected(const DisconnectEvent& event);
+    void kicked(const KickedEvent* event);
+    void disconnected(const DisconnectEvent* event);
 
-    void sendError(const SendError& error);
-    void kickError(const KickError& error);
-    void getError(const GetError& error);
-    void setError(const SetError& error);
-    void killError(const KillError& error);
+    void sendError(const SendError* error);
+    void kickError(const KickError* error);
+    void getError(const GetError* error);
+    void setError(const SetError* error);
+    void killError(const KillError* error);
 
 private:
     void login();
     void sendCredentials();
 
-    void handleHandshake(dAmnPacket& packet);
-    void handleLogin(dAmnPacket& packet);
+    void handleHandshake(dAmnPacket* packet);
+    void handleLogin(dAmnPacket* packet);
 
-    void handleJoin(dAmnPacket& packet);
-    void handlePart(dAmnPacket& packet);
+    void handleJoin(dAmnPacket* packet);
+    void handlePart(dAmnPacket* packet);
 
     void handlePing();
 
-    void handleProperty(dAmnPacket& packet);
-    void handleWhois(dAmnPacket& packet);
+    void handleProperty(dAmnPacket* packet);
+    void handleWhois(dAmnPacket* packet);
 
-    void handleMsg(dAmnPacket& packet);
-    void handleAction(dAmnPacket& packet);
+    void handleMsg(dAmnPacket* packet);
+    void handleAction(dAmnPacket* packet);
 
-    void handlePeerJoin(dAmnPacket& packet);
-    void handlePeerPart(dAmnPacket& packet);
-    void handlePeerKick(dAmnPacket& packet);
+    void handlePeerJoin(dAmnPacket* packet);
+    void handlePeerPart(dAmnPacket* packet);
+    void handlePeerKick(dAmnPacket* packet);
 
-    void handlePrivchg(dAmnPacket& packet);
-    void handlePrivUpdate(dAmnPacket& packet);
-    void handlePrivMove(dAmnPacket& packet);
-    void handlePrivRemove(dAmnPacket& packet);
+    void handlePrivchg(dAmnPacket* packet);
+    void handlePrivUpdate(dAmnPacket* packet);
+    void handlePrivMove(dAmnPacket* packet);
+    void handlePrivRemove(dAmnPacket* packet);
 
-    void handlePrivShow(dAmnPacket& packet);
-    void handlePrivUsers(dAmnPacket& packet);
+    void handlePrivShow(dAmnPacket* packet);
+    void handlePrivUsers(dAmnPacket* packet);
 
-    void handkeKick(dAmnPacket& packet);
-    void handleDisconnect(dAmnPacket& packet);
+    void handkeKick(dAmnPacket* packet);
+    void handleDisconnect(dAmnPacket* packet);
 
-    void handleSendError(dAmnPacket& packet);
-    void handleKickError(dAmnPacket& packet);
-    void handleGetError(dAmnPacket& packet);
-    void handleSetError(dAmnPacket& packetr);
-    void handleKillError(dAmnPacket& packet);
+    void handleSendError(dAmnPacket* packet);
+    void handleKickError(dAmnPacket* packet);
+    void handleGetError(dAmnPacket* packet);
+    void handleSetError(dAmnPacket* packetr);
+    void handleKillError(dAmnPacket* packet);
 };
 
 #endif // DAMNSESSION_H

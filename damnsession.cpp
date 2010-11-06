@@ -173,8 +173,8 @@ void dAmnSession::send(dAmnPacket& packet)
 
 void dAmnSession::readPacket()
 {
-    dAmnPacket packet (this, this->socket.readAll());
-    switch(packet.command())
+    dAmnPacket* packet = new dAmnPacket(this, this->socket.readAll());
+    switch(packet->command())
     {
     case dAmnPacket::dAmnServer:
         this->handleHandshake(packet);
@@ -263,11 +263,11 @@ void dAmnSession::quit()
     this->send(packet);
 }
 
-void dAmnSession::handleHandshake(dAmnPacket& packet)
+void dAmnSession::handleHandshake(dAmnPacket* packet)
 {
-    HandshakeEvent event (this, packet);
+    HandshakeEvent* event = new HandshakeEvent(this, packet);
 
-    if(event.matches())
+    if(event->matches())
     {
         this->sendCredentials();
     }
@@ -287,17 +287,17 @@ void dAmnSession::sendCredentials()
     this->send(loginPacket);
 }
 
-void dAmnSession::handleLogin(dAmnPacket& packet)
+void dAmnSession::handleLogin(dAmnPacket* packet)
 {
-    LoginEvent event (this, packet);
+    LoginEvent* event = new LoginEvent(this, packet);
 
-    if(event.getEvent() == LoginEvent::ok)
+    if(event->getEvent() == LoginEvent::ok)
     {
-        this->user_name = event.getUserName();
-        this->symbol    = event.getSymbol();
-        this->real_name = event.getRealName();
-        this->type_name = event.getTypeName();
-        this->gpc       = event.getGpc();
+        this->user_name = event->getUserName();
+        this->symbol    = event->getSymbol();
+        this->real_name = event->getRealName();
+        this->type_name = event->getTypeName();
+        this->gpc       = event->getGpc();
 
         this->state     = online;
     }
@@ -310,33 +310,33 @@ void dAmnSession::handleLogin(dAmnPacket& packet)
     emit loggedIn(event);
 }
 
-void dAmnSession::handleJoin(dAmnPacket& packet)
+void dAmnSession::handleJoin(dAmnPacket* packet)
 {
-    JoinedEvent event (this, packet);
+    JoinedEvent* event = new JoinedEvent(this, packet);
 
-    if(event.getEvent() == JoinedEvent::ok)
+    if(event->getEvent() == JoinedEvent::ok)
     {
-        if(this->chatrooms.contains(event.getChatroom().toIdString()))
+        if(this->chatrooms.contains(event->getChatroom().toIdString()))
         {
             MNLIB_WARN("Joined a chatroom which we already joined. Aborting.");
         }
         else
         {
-            this->chatrooms[event.getChatroom().toIdString()]
-                    = new dAmnChatroom(this, event.getChatroom());
+            this->chatrooms[event->getChatroom().toIdString()]
+                    = new dAmnChatroom(this, event->getChatroom());
         }
     }
 
     emit joined(event);
 }
 
-void dAmnSession::handlePart(dAmnPacket& packet)
+void dAmnSession::handlePart(dAmnPacket* packet)
 {
-    PartedEvent event (this, packet);
+    PartedEvent* event = new PartedEvent(this, packet);
 
-    if(event.getEvent() == PartedEvent::ok)
+    if(event->getEvent() == PartedEvent::ok)
     {
-        this->chatrooms.remove(event.getChatroom().toIdString());
+        this->chatrooms.remove(event->getChatroom().toIdString());
     }
 
     emit parted(event);
@@ -349,25 +349,25 @@ void dAmnSession::handlePing()
     emit ping();
 }
 
-void dAmnSession::handleProperty(dAmnPacket& packet)
+void dAmnSession::handleProperty(dAmnPacket* packet)
 {
-    PropertyEvent event (this, packet);
-    QString idstring = event.getChatroom().toIdString();
+    PropertyEvent* event = new PropertyEvent(this, packet);
+    QString idstring = event->getChatroom().toIdString();
 
     if(!this->chatrooms.contains(idstring))
     {
         MNLIB_WARN("Got property %s of chatroom %s that we haven't joined.",
-                   qPrintable(event.getPropertyString()),
-                   qPrintable(event.getChatroom().toString()));
+                   qPrintable(event->getPropertyString()),
+                   qPrintable(event->getChatroom().toString()));
         return;
     }
 
-    switch(event.getProperty())
+    switch(event->getProperty())
     {
     case PropertyEvent::topic:
-        this->chatrooms[idstring]->setTopic(event.getValue());
+        this->chatrooms[idstring]->setTopic(event->getValue());
     case PropertyEvent::title:
-        this->chatrooms[idstring]->setTitle(event.getValue());
+        this->chatrooms[idstring]->setTitle(event->getValue());
     case PropertyEvent::privclasses:
         ; // TODO
     }
