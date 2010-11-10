@@ -141,10 +141,25 @@ void dAmnChatroom::updatePrivclasses(const QString& data)
         bool ok;
 
         QString line = parser.readLine();
+
         QStringList split = line.split(':');
+        if(split.size() < 2)
+        {
+            MNLIB_WARN("Invalid privclass property \"%s\" ignored.",
+                       qPrintable(line));
+            continue;
+        }
+
+        int idx = split[0].toInt(&ok);
+        if(!ok)
+        {
+            MNLIB_WARN("Could not parse privclass order: %s",
+                       qPrintable(split[0]));
+            continue;
+        }
 
         this->addPrivclass(
-                new dAmnPrivClass(this, split[1], split[0].toInt(&ok))
+                new dAmnPrivClass(this, split[1], idx)
                 );
     }
 }
