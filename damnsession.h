@@ -52,7 +52,7 @@ class MNLIBSHARED_EXPORT dAmnSession : public QObject
 public:
     enum State
     {
-        offline, logging_in, online
+        unauthenticated, offline, logging_in, online
     };
 
 private:

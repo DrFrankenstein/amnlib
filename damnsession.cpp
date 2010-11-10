@@ -30,7 +30,7 @@
 #include <QHostAddress>
 
 dAmnSession::dAmnSession()
-    : state(offline)
+    : state(unauthenticated)
 {
     user_agent = tr("mnlib/").append(MNLIB_VERSION);
     auth_token.reserve(32);
@@ -110,19 +110,22 @@ void dAmnSession::gotAuthToken(QNetworkReply* reply)
     {   // HACK: This may break if the cookie changes more than we expect it to.
         // The ideal solution would be a decent parser, but is tedious to implement.
         this->auth_token = cookiestr.mid((found = cookiestr.indexOf("authtoken\";s:32:")) + 17, 32).toAscii();
-
-        MNLIB_DEBUG("Token accepted: %s", this->auth_token.data());
     }
     else
     {   // Got no cookie with the name "userinfo".
-        // TODO: Handle error
-        MNLIB_WARN("NO COOKIE :(");
+        MNLIB_WARN("Authentication failure. (NO COOKIE :( )");
     }
 
     if(!found)
     {   // Cookie contains no authtoken?
-        // TODO: Handle error
-        MNLIB_WARN("CAN'T NOM COOKIE :(");
+        MNLIB_WARN("Authentication failure. (CAN'T NOM COOKIE :( )");
+        this->state = unauthenticated;
+    }
+    else
+    {
+        this->state = offline;
+
+        MNLIB_DEBUG("Token accepted: %s", this->auth_token.data());
     }
 
     http->deleteLater();
@@ -362,13 +365,20 @@ void dAmnSession::handleProperty(dAmnPacket* packet)
         return;
     }
 
+    dAmnChatroom* chatroom = this->chatrooms[idstring];
+
     switch(event->getProperty())
     {
     case PropertyEvent::topic:
-        this->chatrooms[idstring]->setTopic(event->getValue());
+        chatroom->setTopic(event->getValue());
     case PropertyEvent::title:
-        this->chatrooms[idstring]->setTitle(event->getValue());
+        chatroom->setTitle(event->getValue());
     case PropertyEvent::privclasses:
-        ; // TODO
+        chatroom->updatePrivclasses(event->getValue());
+
+    default:
+        MNLIB_WARN("Got unknown property %s for chatroom %s.",
+                   qPrintable(event->getPropertyString()),
+                   qPrintable(event->getChatroom().toString()));
     }
 }

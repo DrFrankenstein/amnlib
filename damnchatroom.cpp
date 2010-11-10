@@ -117,13 +117,36 @@ void dAmnChatroom::setTitle(const QString& newtitle)
     this->title = newtitle;
 }
 
-void dAmnChatroom::addPrivclass(dAmnPrivClass& pc)
+void dAmnChatroom::addPrivclass(dAmnPrivClass* pc)
 {
-    this->privclasses[pc.getName()] = &pc;
+    this->privclasses[pc->getName()] = pc;
 }
 void dAmnChatroom::removePrivclass(const QString& name)
 {
+    dAmnPrivClass* pc = this->privclasses[name];
+    delete pc;
+
     this->privclasses.remove(name);
+}
+
+void dAmnChatroom::updatePrivclasses(const QString& data)
+{
+    this->privclasses.clear();
+
+    QString pclasses = data;
+    QTextStream parser (&pclasses);
+
+    while(!parser.atEnd())
+    {
+        bool ok;
+
+        QString line = parser.readLine();
+        QStringList split = line.split(':');
+
+        this->addPrivclass(
+                new dAmnPrivClass(this, split[1], split[0].toInt(&ok))
+                );
+    }
 }
 
 void dAmnChatroom::part()

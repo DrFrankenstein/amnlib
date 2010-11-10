@@ -52,6 +52,7 @@ private:
 
 public:
     dAmnPrivClass(dAmnChatroom* parent);
+    dAmnPrivClass(dAmnChatroom* parent, const QString& name, uint order);
     dAmnPrivClass(dAmnChatroom* parent, const QString& command);
 
     void apply(QString command);

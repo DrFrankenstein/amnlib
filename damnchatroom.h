@@ -59,8 +59,10 @@ public:
     void setTopic(const QString& newtopic);
     void setTitle(const QString& newtitle);
 
-    void addPrivclass(dAmnPrivClass& pc);
+    void addPrivclass(dAmnPrivClass* pc);
     void removePrivclass(const QString& name);
+
+    void updatePrivclasses(const QString& data);
 
     void part();
 

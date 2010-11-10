@@ -30,6 +30,11 @@ dAmnPrivClass::dAmnPrivClass(dAmnChatroom* parent)
 {
 }
 
+dAmnPrivClass::dAmnPrivClass(dAmnChatroom* parent, const QString& name, uint order)
+    : QObject(parent), name(name), order(order)
+{
+}
+
 dAmnPrivClass::dAmnPrivClass(dAmnChatroom* parent, const QString& command)
     : QObject(parent)
 {
