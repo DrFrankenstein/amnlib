@@ -16,7 +16,9 @@ SOURCES += damnsession.cpp \
     timespan.cpp \
     deviant.cpp \
     damnuser.cpp \
-    damnobject.cpp
+    damnobject.cpp \
+    damnpacketparser.cpp \
+    damnpacketdevice.cpp
 HEADERS += damnsession.h \
     mnlib_global.h \
     damnpacket.h \
@@ -27,11 +29,13 @@ HEADERS += damnsession.h \
     deviant.h \
     damnuser.h \
     evtfwd.h \
-    damnobject.h
+    damnobject.h \
+    damnpacketparser.h \
+    damnpacketdevice.h
 debug:DEFINES += MNLIB_DEBUG_BUILD
 else:DEFINES += MNLIB_RELEASE_BUILD
 
-VERSION = 0.1.1005
+VERSION = 0.1.1105
 VER_MAJ = 0
 VER_MIN = 1
-VER_PAT = 1005
+VER_PAT = 1105

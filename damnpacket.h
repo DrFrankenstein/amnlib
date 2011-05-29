@@ -55,7 +55,7 @@ public:
         msg, action, npmsg,
         userinfo,
         whois,
-        privchg,
+        privchg
     };
 protected:
     KnownCmd kcmd;
@@ -67,14 +67,13 @@ public:
     // Copies a packet.
     dAmnPacket(const dAmnPacket& packet);
     // Builds a packet.
-    dAmnPacket(dAmnSession* parent, const QString& cmd, const QString& param, const QString& data = QString());
-    // Parses a packet.
-    dAmnPacket(dAmnSession* parent, const QByteArray& raw);
+    dAmnPacket(dAmnSession* parent, const QString& cmd, const QString& param = QString(), const QString& data = QString());
     // Destroys a packet.
     virtual ~dAmnPacket();
 
     // Retrieves the argument list.
     const QHash<QString, QString>& getArgs() const;
+    void setArgs(const QHash<QString, QString>& args);
     QString operator[](const QString& arg) const;
 
     KnownCmd command() const;
@@ -85,9 +84,6 @@ public:
     QByteArray toByteArray() const;
 
     dAmnPacket& getSubPacket();
-
-    // Utility functions
-    static QPair<QString, QString> parsePair(const QString& line);
 };
 
 #endif // DAMNPACKET_H

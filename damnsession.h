@@ -32,6 +32,7 @@
 #include "damnchatroom.h"
 #include "evtfwd.h"
 #include "damnuser.h"
+#include "damnpacketdevice.h"
 
 class QNetworkReply;
 template <typename T> class QList;
@@ -43,6 +44,8 @@ class MNLIBSHARED_EXPORT dAmnSession : public QObject
     Q_OBJECT
 
     QTcpSocket socket;
+    dAmnPacketDevice packetdevice;
+
     QString user_agent, user_name, real_name, type_name, gpc;
     QByteArray auth_token;
     QChar symbol;
@@ -62,7 +65,7 @@ private slots:
     void gotAuthToken(QNetworkReply*);
     void handleSslErrors(QNetworkReply* reply, QList<QSslError> errors);
 
-    void readPacket();
+    void handlePacket(dAmnPacket* packet);
 
 public:
     dAmnSession();

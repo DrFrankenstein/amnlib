@@ -18,7 +18,7 @@
 */
 
 #include "damnprivclass.h"
-#include "damnpacket.h"
+#include "damnpacketparser.h"
 #include "damnchatroom.h"
 
 #include <QString>
@@ -69,7 +69,7 @@ void dAmnPrivClass::apply(QString commands)
         break;
 
         default:
-            QPair<QString, QString> pair = dAmnPacket::parsePair(command);
+            QPair<QString, QString> pair = dAmnPacketParser::splitPair(command);
             priv = pair.first;
             value = pair.second.toInt();
         }

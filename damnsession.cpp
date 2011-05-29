@@ -30,10 +30,13 @@
 #include <QHostAddress>
 
 dAmnSession::dAmnSession()
-    : state(unauthenticated)
+    : state(unauthenticated), packetdevice(this, this->socket)
 {
     user_agent = tr("mnlib/").append(MNLIB_VERSION);
     auth_token.reserve(32);
+
+    connect(&this->packetdevice, SIGNAL(packetReady(dAmnPacket*)),
+            this, SLOT(handlePacket(dAmnPacket*)));
 }
 
 dAmnSession::~dAmnSession()
@@ -158,9 +161,6 @@ void dAmnSession::connectToHost()
                 this, SLOT(client()));
         this->socket.connectToHost(QHostAddress("chat.deviantart.com"), 3900, QIODevice::ReadWrite);
 
-        connect(&this->socket, SIGNAL(readyRead()),
-                this, SLOT(readPacket()));
-
         this->login();
     }
     else
@@ -169,21 +169,21 @@ void dAmnSession::connectToHost()
     }
 }
 
-void dAmnSession::send(dAmnPacket& packet)
+void dAmnSession::handlePacket(dAmnPacket* packet)
 {
-    this->socket.write(packet.toByteArray());
-}
-
-void dAmnSession::readPacket()
-{
-    dAmnPacket* packet = new dAmnPacket(this, this->socket.readAll());
     switch(packet->command())
     {
     case dAmnPacket::dAmnServer:
         this->handleHandshake(packet);
         break;
+
     default: qt_noop();
     }
+}
+
+void dAmnSession::send(dAmnPacket& packet)
+{
+    this->socket.write(packet.toByteArray());
 }
 
 void dAmnSession::login()
@@ -256,7 +256,7 @@ void dAmnSession::kill(const QString& username, const QString& reason)
 
 void dAmnSession::pong()
 {
-    dAmnPacket packet (this, "pong", QString());
+    dAmnPacket packet (this, "pong");
     this->send(packet);
 }
 
@@ -375,6 +375,8 @@ void dAmnSession::handleProperty(dAmnPacket* packet)
         chatroom->setTitle(event->getValue());
     case PropertyEvent::privclasses:
         chatroom->updatePrivclasses(event->getValue());
+    case PropertyEvent::members:
+        // NYI
 
     default:
         MNLIB_WARN("Got unknown property %s for chatroom %s.",

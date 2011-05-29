@@ -19,15 +19,13 @@
 
 #include "damnpacket.h"
 #include "damnsession.h"
-
-#include <exception>
+#include "damnpacketparser.h"
 
 #include <QByteArray>
 #include <QTextStream>
 #include <QBuffer>
 #include <QMap>
 #include <QString>
-#include <QPair>
 
 dAmnPacket::dAmnPacket(dAmnSession* parent)
         :dAmnObject(parent),
@@ -39,39 +37,6 @@ dAmnPacket::dAmnPacket(dAmnSession* parent, const QString& cmd, const QString& p
     : dAmnObject(parent),
         cmd(cmd), param(param), data(data), args(QHash<QString, QString>()), subpacket(NULL)
 {
-}
-
-dAmnPacket::dAmnPacket(dAmnSession* parent, const QByteArray& raw)
-        :dAmnObject(parent),
-        subpacket(NULL)
-{
-    QTextStream parser (raw);
-
-    parser >> this->cmd;
-    this->setKCmd();
-
-    // atEnd() is set upon hitting the end of the array or '\0' (dAmn packet terminator)
-    if(parser.atEnd())
-        return;
-
-    parser.read(1);     // Skip the space between cmd and param.
-
-    this->param = parser.readLine();
-
-    if(parser.atEnd())
-        return;
-
-    QString line;
-    while(!(line = parser.readLine()).isEmpty())
-    {
-        QPair<QString, QString> argpair = dAmnPacket::parsePair(line);
-        this->args[argpair.first] = argpair.second;
-    }
-
-    if(parser.atEnd())
-        return;
-
-    this->data = parser.readAll();
 }
 
 dAmnPacket::dAmnPacket(const dAmnPacket& packet)
@@ -141,6 +106,11 @@ const QHash<QString, QString>& dAmnPacket::getArgs() const
     return this->args;
 }
 
+void dAmnPacket::setArgs(const QHash<QString, QString> &args)
+{
+    this->args = args;
+}
+
 QString dAmnPacket::operator[](const QString& arg) const
 {
     return this->args[arg];
@@ -165,21 +135,9 @@ dAmnPacket& dAmnPacket::getSubPacket()
 {
     if(!this->subpacket)
     {
-        try
-        {
-            this->subpacket = new dAmnPacket(this->session(), this->data.toLatin1());
-        }
-        catch(std::bad_alloc)
-        {
-            MNLIB_FAIL("Couldn't allocate subpacket!");
-        }
+        dAmnPacketParser parser (this->session());
+        this->subpacket = parser.parsePacket(&this->data.toUtf8());
     }
 
     return *this->subpacket;
-}
-
-QPair<QString, QString> dAmnPacket::parsePair(const QString& line)
-{
-    int idx = line.indexOf('=');
-    return qMakePair(line.mid(0, idx), line.mid(idx + 1));
 }

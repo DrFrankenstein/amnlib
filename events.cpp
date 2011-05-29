@@ -22,6 +22,7 @@
 #include "damnchatroom.h"
 #include "damnsession.h"
 #include "timespan.h"
+#include "damnpacketparser.h"
 
 #include <QString>
 #include <QChar>
@@ -266,7 +267,7 @@ bool WhoisEvent::parseData()
 
     while(!(line = parser.readLine()).isEmpty())
     {
-        param = dAmnPacket::parsePair(line);
+        param = dAmnPacketParser::splitPair(line);
         if(param.first == "usericon")
         {
             this->usericon = param.second.toUInt(&ok, 10);
@@ -310,7 +311,7 @@ bool WhoisEvent::parseData()
 
         while(!(line = parser.readLine()).isEmpty())
         {
-            param = dAmnPacket::parsePair(line);
+            param = dAmnPacketParser::splitPair(line);
 
             if(param.first == "online")
                 conn.online = TimeSpan(param.second.toUInt(&ok, 10));
