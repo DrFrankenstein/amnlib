@@ -58,7 +58,9 @@ void dAmnSession::authenticate(const QString& username, const QString& password,
             this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
 
     QString ident_str = tr("ref=https://www.deviantart.com/users/login&username=%1&password=%2&remember_me=%3")
-                .arg(username, password, QString().setNum(reusetoken));
+                .arg(QUrl::toPercentEncoding(username),
+                     QUrl::toPercentEncoding(password),
+                     QString().setNum(reusetoken));
 
     QNetworkRequest request (QUrl("https://www.deviantart.com/users/login"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
