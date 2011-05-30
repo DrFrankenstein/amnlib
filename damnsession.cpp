@@ -28,6 +28,7 @@
 #include <QNetworkCookie>
 #include <QSslError>
 #include <QHostAddress>
+#include <QRegExp>
 
 dAmnSession::dAmnSession()
     : state(unauthenticated), packetdevice(this, this->socket)
@@ -52,21 +53,16 @@ void dAmnSession::authenticate(const QString& username, const QString& password,
     QNetworkAccessManager* http = new QNetworkAccessManager(this);
 
     connect(http, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(gotAuthToken(QNetworkReply*)));
+            this, SLOT(gotAuthCookie(QNetworkReply*)));
     connect(http, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
 
-    QString ident_str = tr("ref=https://www.deviantart.com/users/login&username=%1&password=%2&reusetoken=%3")
+    QString ident_str = tr("ref=https://www.deviantart.com/users/login&username=%1&password=%2&remember_me=%3")
                 .arg(username, password, QString().setNum(reusetoken));
-
-    QNetworkCookie cookie (qba("skipintro"), qba("1"));
-    QList<QNetworkCookie> cookies;
-    cookies.push_back(cookie);
 
     QNetworkRequest request (QUrl("https://www.deviantart.com/users/login"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     request.setHeader(QNetworkRequest::ContentLengthHeader, ident_str.size());
-    request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     request.setRawHeader(qba("User-Agent"), this->user_agent.toAscii());
     request.setRawHeader(qba("Accept"), qba("text/html"));
 
@@ -90,48 +86,59 @@ void dAmnSession::handleSslErrors(QNetworkReply* reply, QList<QSslError> errors)
     reply->ignoreSslErrors();
 }
 
-void dAmnSession::gotAuthToken(QNetworkReply* reply)
+void dAmnSession::gotAuthCookie(QNetworkReply* reply)
 {
     QNetworkAccessManager* http = reply->manager();
+    disconnect(http, SIGNAL(finished(QNetworkReply*)),
+               this, SLOT(gotAuthCookie(QNetworkReply*)));
 
-    // The expected form of the cookie is a serialized PHP array, URL-encoded, that contains an item with
-    // the key "authtoken" and a value that has 32 characters.
-
-    QString cookiestr;
-    QList<QNetworkCookie> cookies = http->cookieJar()->cookiesForUrl(QUrl("https://www.deviantart.com/users/login"));
+    bool authenticated = false;
+    QList<QNetworkCookie> cookies = http->cookieJar()
+            ->cookiesForUrl(QUrl("https://www.deviantart.com/"));
     foreach(QNetworkCookie cookie, cookies)
+        if(cookie.name() == "auth")
+            authenticated = true;
+
+    if(authenticated)
     {
-        if(cookie.name() == "userinfo")
-        {   // URL-decode the recieved cookie.
-            cookiestr = QUrl::fromPercentEncoding(cookie.value());
-            break;
-        }
-    }
+        connect(http, SIGNAL(finished(QNetworkReply*)),
+                this, SLOT(gotAuthData(QNetworkReply*)));
 
-    int found = false;
-    if(!cookiestr.isEmpty())
-    {   // HACK: This may break if the cookie changes more than we expect it to.
-        // The ideal solution would be a decent parser, but is tedious to implement.
-        this->auth_token = cookiestr.mid((found = cookiestr.indexOf("authtoken\";s:32:")) + 17, 32).toAscii();
-    }
-    else
-    {   // Got no cookie with the name "userinfo".
-        MNLIB_WARN("Authentication failure. (NO COOKIE :( )");
-    }
+        QNetworkRequest request (QUrl("http://chat.deviantart.com/chat/devart"));
+        http->get(request);
 
-    if(!found)
-    {   // Cookie contains no authtoken?
-        MNLIB_WARN("Authentication failure. (CAN'T NOM COOKIE :( )");
-        this->state = unauthenticated;
+        MNLIB_DEBUG("Authentication received, getting dAmn login token.");
     }
     else
     {
+        MNLIB_CRIT("Authentication failed for %s", qPrintable(this->user_name));
         this->state = offline;
+        http->deleteLater();
+    }
 
+    reply->deleteLater();
+}
+
+void dAmnSession::gotAuthData(QNetworkReply* reply)
+{
+    QString data (reply->readAll());
+
+    // Ugly page scraping ahead...
+    QRegExp rx ("dAmn_Login\\s*\\(\\s*\".*\"\\s*,\\s*\"([0-9a-f]{32})\"");
+    int pos = rx.indexIn(data);
+    if(pos >= 0)
+    {
+        this->auth_token = rx.cap(1).toAscii();
+        this->state = logging_in;
         MNLIB_DEBUG("Token accepted: %s", this->auth_token.data());
     }
+    else
+    {
+        MNLIB_CRIT("Couldn't scrape login token!");
+        this->state = offline;
+    }
 
-    http->deleteLater();
+    reply->manager()->deleteLater();
     reply->deleteLater();
 }
 
@@ -175,6 +182,21 @@ void dAmnSession::handlePacket(dAmnPacket* packet)
     {
     case dAmnPacket::dAmnServer:
         this->handleHandshake(packet);
+        break;
+    case dAmnPacket::login:
+        this->handleLogin(packet);
+        break;
+    case dAmnPacket::join:
+        this->handleJoin(packet);
+        break;
+    case dAmnPacket::part:
+        this->handlePart(packet);
+        break;
+    case dAmnPacket::ping:
+        this->handlePing();
+        break;
+    case dAmnPacket::property:
+        this->handleProperty(packet);
         break;
 
     default: qt_noop();

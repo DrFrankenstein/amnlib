@@ -84,21 +84,27 @@ QByteArray dAmnPacket::toByteArray() const
     QString rawpacket;
     QTextStream builder (&rawpacket, QIODevice::WriteOnly);
 
-    builder << this->cmd << this->param << endl;
+    builder << this->cmd;
+    if(!this->param.isEmpty())
+    {
+        builder << ' ' << this->param;
+    }
+
+    builder << '\n';
 
     foreach(QString argn, this->args.keys())
     {
-        builder << argn << '=' << this->args[argn] << endl;
+        builder << argn << '=' << this->args[argn] << '\n';
     }
 
-    if(!this->data.isNull())
+    if(!this->data.isEmpty())
     {
-        builder << endl << this->data << endl;
+        builder << this->data;
     }
 
     builder << '\0';
 
-    return rawpacket.toAscii();
+    return rawpacket.toUtf8();
 }
 
 const QHash<QString, QString>& dAmnPacket::getArgs() const

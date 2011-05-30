@@ -62,7 +62,8 @@ private:
     State state;
 
 private slots:
-    void gotAuthToken(QNetworkReply*);
+    void gotAuthCookie(QNetworkReply* reply);
+    void gotAuthData(QNetworkReply* reply);
     void handleSslErrors(QNetworkReply* reply, QList<QSslError> errors);
 
     void handlePacket(dAmnPacket* packet);
