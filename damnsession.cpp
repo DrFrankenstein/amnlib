@@ -57,18 +57,19 @@ void dAmnSession::authenticate(const QString& username, const QString& password,
     connect(http, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
 
-    QString ident_str = tr("ref=https://www.deviantart.com/users/login&username=%1&password=%2&remember_me=%3")
-                .arg(QUrl::toPercentEncoding(username),
-                     QUrl::toPercentEncoding(password),
-                     QString().setNum(reusetoken));
+    QUrl loginform;
+    loginform.addQueryItem("username", username);
+    loginform.addQueryItem("password", password);
+    loginform.addQueryItem("remember_me", QString().setNum(reusetoken));
+    QByteArray logindata = loginform.toEncoded();
 
     QNetworkRequest request (QUrl("https://www.deviantart.com/users/login"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    request.setHeader(QNetworkRequest::ContentLengthHeader, ident_str.size());
+    request.setHeader(QNetworkRequest::ContentLengthHeader, logindata.size());
     request.setRawHeader(qba("User-Agent"), this->user_agent.toAscii());
     request.setRawHeader(qba("Accept"), qba("text/html"));
 
-    http->post(request, ident_str.toAscii());
+    http->post(request, logindata);
 
     MNLIB_DEBUG("Requesting authentication for %s", qPrintable(username));
 }
