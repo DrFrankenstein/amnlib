@@ -20,13 +20,15 @@
 #ifndef DEVIANT_H
 #define DEVIANT_H
 
+#include "mnlib_global.h"
+
 #include <QObject>
 #include <QString>
 #include <QChar>
 
 class QUrl;
 
-class Deviant : public QObject
+class MNLIBSHARED_EXPORT Deviant : public QObject
 {
     Q_OBJECT
 

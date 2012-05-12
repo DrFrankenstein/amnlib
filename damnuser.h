@@ -20,6 +20,7 @@
 #ifndef DAMNUSER_H
 #define DAMNUSER_H
 
+#include "mnlib_global.h"
 #include "deviant.h"
 #include "timespan.h"
 
@@ -27,7 +28,7 @@
 #include <QString>
 #include <QChar>
 
-class dAmnUser : public Deviant
+class MNLIBSHARED_EXPORT dAmnUser : public Deviant
 {
 private:
     // QList<QString> joinedChatrooms;  // dynamic; should not be stored.

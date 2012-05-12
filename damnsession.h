@@ -1,7 +1,7 @@
 /*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright © 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2011 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,24 +55,18 @@ class MNLIBSHARED_EXPORT dAmnSession : public QObject
 public:
     enum State
     {
-        unauthenticated, offline, logging_in, online
+        offline, logging_in, online
     };
 
 private:
     State state;
 
 private slots:
-    void gotAuthCookie(QNetworkReply* reply);
-    void gotAuthData(QNetworkReply* reply);
-    void handleSslErrors(QNetworkReply* reply, QList<QSslError> errors);
-
     void handlePacket(dAmnPacket* packet);
 
 public:
-    dAmnSession();
+    dAmnSession(const QByteArray& token);
     virtual ~dAmnSession();
-
-    void authenticate(const QString& username, const QString& password, bool reusetoken = true);
 
     const QString& getUserName() const;
     State getState() const;

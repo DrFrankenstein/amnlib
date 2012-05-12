@@ -20,9 +20,11 @@
 #ifndef TIMESPAN_H
 #define TIMESPAN_H
 
+#include "mnlib_global.h"
+
 #include <qglobal.h>
 
-class TimeSpan
+class MNLIBSHARED_EXPORT TimeSpan
 {
     uint _seconds;
 

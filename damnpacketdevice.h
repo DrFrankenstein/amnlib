@@ -21,12 +21,13 @@
 #define DAMNPACKETDEVICE_H
 
 #include <QIODevice>
+#include "mnlib_global.h"
 #include "damnobject.h"
 #include "damnpacketparser.h"
 
 class dAmnSession;
 
-class dAmnPacketDevice : public dAmnObject
+class MNLIBSHARED_EXPORT dAmnPacketDevice : public dAmnObject
 {
     Q_OBJECT
 

@@ -19,5 +19,5 @@
 
 #include "mnlib_global.h"
 
-const char* MNLIB_VERSION = "0.1.1005.wip";
+const char* MNLIB_VERSION = "0.1.1201.wip";
 const char* DAMN_VERSION = "0.3";

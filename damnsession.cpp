@@ -30,119 +30,14 @@
 #include <QHostAddress>
 #include <QRegExp>
 
-dAmnSession::dAmnSession()
-    : state(unauthenticated), packetdevice(this, this->socket)
+dAmnSession::dAmnSession(const QByteArray& token)
+    : state(unauthenticated), packetdevice(this, this->socket), auth_token(token)
 {
     user_agent = tr("mnlib/").append(MNLIB_VERSION);
-    auth_token.reserve(32);
-
-    connect(&this->packetdevice, SIGNAL(packetReady(dAmnPacket*)),
-            this, SLOT(handlePacket(dAmnPacket*)));
 }
 
 dAmnSession::~dAmnSession()
 {
-}
-
-void dAmnSession::authenticate(const QString& username, const QString& password, bool reusetoken)
-{
-    typedef QByteArray qba;
-
-    this->user_name = username;
-
-    QNetworkAccessManager* http = new QNetworkAccessManager(this);
-
-    connect(http, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(gotAuthCookie(QNetworkReply*)));
-    connect(http, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
-            this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
-
-    QUrl loginform;
-    loginform.addQueryItem("username", username);
-    loginform.addQueryItem("password", password);
-    loginform.addQueryItem("remember_me", QString().setNum(reusetoken));
-    QByteArray logindata = loginform.toEncoded();
-
-    QNetworkRequest request (QUrl("https://www.deviantart.com/users/login"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    request.setHeader(QNetworkRequest::ContentLengthHeader, logindata.size());
-    request.setRawHeader(qba("User-Agent"), this->user_agent.toAscii());
-    request.setRawHeader(qba("Accept"), qba("text/html"));
-
-    http->post(request, logindata);
-
-    MNLIB_DEBUG("Requesting authentication for %s", qPrintable(username));
-}
-
-void dAmnSession::handleSslErrors(QNetworkReply* reply, QList<QSslError> errors)
-{   MNLIB_STUB
-
-#if MNLIB_DEBUG_BUILD
-    foreach(QSslError error, errors)
-    {
-        MNLIB_DEBUG("%s", qPrintable(error.errorString()));
-    }
-#else
-    Q_UNUSED(errors)
-#endif
-
-    reply->ignoreSslErrors();
-}
-
-void dAmnSession::gotAuthCookie(QNetworkReply* reply)
-{
-    QNetworkAccessManager* http = reply->manager();
-    disconnect(http, SIGNAL(finished(QNetworkReply*)),
-               this, SLOT(gotAuthCookie(QNetworkReply*)));
-
-    bool authenticated = false;
-    QList<QNetworkCookie> cookies = http->cookieJar()
-            ->cookiesForUrl(QUrl("https://www.deviantart.com/"));
-    foreach(QNetworkCookie cookie, cookies)
-        if(cookie.name() == "auth")
-            authenticated = true;
-
-    if(authenticated)
-    {
-        connect(http, SIGNAL(finished(QNetworkReply*)),
-                this, SLOT(gotAuthData(QNetworkReply*)));
-
-        QNetworkRequest request (QUrl("http://chat.deviantart.com/chat/devart"));
-        http->get(request);
-
-        MNLIB_DEBUG("Authentication received, getting dAmn login token.");
-    }
-    else
-    {
-        MNLIB_CRIT("Authentication failed for %s", qPrintable(this->user_name));
-        this->state = offline;
-        http->deleteLater();
-    }
-
-    reply->deleteLater();
-}
-
-void dAmnSession::gotAuthData(QNetworkReply* reply)
-{
-    QString data (reply->readAll());
-
-    // Ugly page scraping ahead...
-    QRegExp rx ("dAmn_Login\\s*\\(\\s*\".*\"\\s*,\\s*\"([0-9a-f]{32})\"");
-    int pos = rx.indexIn(data);
-    if(pos >= 0)
-    {
-        this->auth_token = rx.cap(1).toAscii();
-        this->state = logging_in;
-        MNLIB_DEBUG("Token accepted: %s", this->auth_token.data());
-    }
-    else
-    {
-        MNLIB_CRIT("Couldn't scrape login token!");
-        this->state = offline;
-    }
-
-    reply->manager()->deleteLater();
-    reply->deleteLater();
 }
 
 const QString& dAmnSession::getUserName() const

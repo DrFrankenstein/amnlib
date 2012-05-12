@@ -24,10 +24,11 @@ class QByteArray;
 class dAmnSession;
 class dAmnPacket;
 
+#include "mnlib_global.h"
 #include <QPair>
 #include <QString>
 
-class dAmnPacketParser
+class MNLIBSHARED_EXPORT dAmnPacketParser
 {
     dAmnSession* session;
 

@@ -24,9 +24,11 @@
 #include <QHash>
 #include <QList>
 
+#include "mnlib_global.h"
+
 class dAmnChatroom;
 
-class dAmnPrivClass : public QObject
+class MNLIBSHARED_EXPORT dAmnPrivClass : public QObject
 {
     Q_OBJECT
 

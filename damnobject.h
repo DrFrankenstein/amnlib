@@ -21,10 +21,11 @@
 #define DAMNOBJECT_H
 
 #include <QObject>
+#include "mnlib_global.h"
 
 class dAmnSession;
 
-class dAmnObject : public QObject
+class MNLIBSHARED_EXPORT dAmnObject : public QObject
 {
     Q_OBJECT
 

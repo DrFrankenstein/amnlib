@@ -18,7 +18,8 @@ SOURCES += damnsession.cpp \
     damnuser.cpp \
     damnobject.cpp \
     damnpacketparser.cpp \
-    damnpacketdevice.cpp
+    damnpacketdevice.cpp \
+    scrapingauthenticationprovider.cpp
 HEADERS += damnsession.h \
     mnlib_global.h \
     damnpacket.h \
@@ -31,11 +32,12 @@ HEADERS += damnsession.h \
     evtfwd.h \
     damnobject.h \
     damnpacketparser.h \
-    damnpacketdevice.h
+    damnpacketdevice.h \
+    scrapingauthenticationprovider.h
 debug:DEFINES += MNLIB_DEBUG_BUILD
 else:DEFINES += MNLIB_RELEASE_BUILD
 
-VERSION = 0.1.1105
+VERSION = 0.1.1201
 VER_MAJ = 0
 VER_MIN = 1
-VER_PAT = 1105
+VER_PAT = 1201
