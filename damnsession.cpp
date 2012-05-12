@@ -21,17 +21,11 @@
 #include "damnpacket.h"
 #include "events.h"
 
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QNetworkCookieJar>
-#include <QNetworkCookie>
-#include <QSslError>
 #include <QHostAddress>
 #include <QRegExp>
 
 dAmnSession::dAmnSession(const QByteArray& token)
-    : state(unauthenticated), packetdevice(this, this->socket), auth_token(token)
+    : state(offline), packetdevice(this, this->socket), auth_token(token)
 {
     user_agent = tr("mnlib/").append(MNLIB_VERSION);
 }
