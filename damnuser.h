@@ -21,21 +21,25 @@
 #define DAMNUSER_H
 
 #include "mnlib_global.h"
+#include "damnsession.h"
 #include "deviant.h"
 #include "timespan.h"
 
-// #include <QList>
+#include <QSet>
 #include <QString>
 #include <QChar>
 
+class dAmnChatroom;
+
 class MNLIBSHARED_EXPORT dAmnUser : public Deviant
 {
-private:
-    // QList<QString> joinedChatrooms;  // dynamic; should not be stored.
+    QSet<dAmnChatroom*> joinedChatrooms;
 
 public:
-    dAmnUser(const QString& name, const QChar& symbol = QChar::Null,
+    dAmnUser(dAmnSession* parent, const QString& name, const QChar& symbol = QChar::Null,
              int usericon = 0, const QString& realname = QString(), const QString& type = QString());
+
+    QSet<dAmnChatroom*>& getChatrooms();
 
     void whois();
 };

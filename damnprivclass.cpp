@@ -136,3 +136,13 @@ int dAmnPrivClass::getThumbsPriv() const { return this->thumbspriv; }
 int dAmnPrivClass::getAvatarsPriv() const { return this->avatarspriv; }
 int dAmnPrivClass::getWebsitesPriv() const { return this->websitespriv; }
 int dAmnPrivClass::getObjectsPriv() const { return this->objectspriv; }
+
+void dAmnPrivClass::addUser(dAmnUser* user)
+{
+    this->users.insert(user);
+}
+
+void dAmnPrivClass::removeUser(dAmnUser* user)
+{
+    this->users.remove(user);
+}

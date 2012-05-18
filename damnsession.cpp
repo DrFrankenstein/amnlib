@@ -44,6 +44,44 @@ dAmnSession::State dAmnSession::getState() const
     return this->state;
 }
 
+QHash<QString, dAmnUser*>& dAmnSession::getUsers()
+{
+    return this->users;
+}
+
+dAmnUser* dAmnSession::addUser(const QString& name,
+                               int usericon,
+                               const QChar& symbol,
+                               const QString &realname,
+                               const QString &type_name)
+{
+    dAmnUser* user = this->users[name];
+
+    if(!user)
+    {
+        user = new dAmnUser(this, name, symbol, usericon, realname, type_name);
+        this->users[name] = user;
+    }
+
+    return user;
+}
+
+void dAmnSession::cleanupUser(const QString& name)
+{
+    dAmnUser* user = this->users[name];
+    if(!user)
+    {
+        MNLIB_WARN("Can't cleanup user %s we don't know about.", qPrintable(name));
+        return;
+    }
+
+    if(user->getChatrooms().isEmpty())
+    {
+        this->users.remove(name);
+        delete user;
+    }
+}
+
 bool dAmnSession::isMe(const QString& name)
 {
     if(name == this->user_name)

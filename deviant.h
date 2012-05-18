@@ -42,7 +42,7 @@ public:
         gif, jpg, png
     };
 
-    Deviant(const QString& name, const QChar& symbol = QChar::Null,
+    Deviant(QObject* parent, const QString& name, const QChar& symbol = QChar::Null,
             int usericon = 0, const QString& realname = QString(), const QString& type = QString());
 
     const QString& getName() const;

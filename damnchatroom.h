@@ -28,6 +28,7 @@
 #include <QHash>
 
 template <typename T> class QList;
+class QByteArray;
 
 class dAmnChatroom;
 struct dAmnChatroomIdentifier;
@@ -85,13 +86,19 @@ public:
 
     void sendAdminCommand(const QString& command);
 
+    void processMembers(const QByteArray& data);
+
 private:
     Type type;
     QString name, title, topic;
     QDateTime titledate, topicdate;
     QHash<QString, dAmnPrivClass*> privclasses;
+    QHash<QString, dAmnPrivClass*> membersToPc;
 
     void send(const dAmnPacket& packet);
+
+    void addMember(const QString& name, const QString& pcname, int usericon, const QChar& symbol, const QString& realname, const QString& type_name);
+    void removeMember(const QString& name);
 };
 
 struct MNLIBSHARED_EXPORT dAmnChatroomIdentifier // NOT a QObject.

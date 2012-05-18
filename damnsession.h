@@ -51,6 +51,7 @@ class MNLIBSHARED_EXPORT dAmnSession : public QObject
     QChar symbol;
 
     QHash<QString, dAmnChatroom*> chatrooms;
+    QHash<QString, dAmnUser*> users;
 
 public:
     enum State
@@ -70,6 +71,13 @@ public:
 
     const QString& getUserName() const;
     State getState() const;
+    QHash<QString, dAmnUser*>& getUsers();
+    dAmnUser* addUser(const QString& name,
+                      int usericon,
+                      const QChar &symbol,
+                      const QString &realname,
+                      const QString& type_name);
+    void cleanupUser(const QString& name);
 
     bool isMe(const QString& name);
 

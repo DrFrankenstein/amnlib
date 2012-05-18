@@ -22,11 +22,12 @@
 
 #include <QObject>
 #include <QHash>
-#include <QList>
+#include <QSet>
 
 #include "mnlib_global.h"
 
 class dAmnChatroom;
+class dAmnUser;
 
 class MNLIBSHARED_EXPORT dAmnPrivClass : public QObject
 {
@@ -38,6 +39,8 @@ class MNLIBSHARED_EXPORT dAmnPrivClass : public QObject
 
     bool joinpriv, titlepriv, topicpriv, kickpriv, msgpriv, shownoticepriv, adminpriv;
     int imagespriv, smiliespriv, emoticonspriv, thumbspriv, avatarspriv, websitespriv, objectspriv;
+
+    QSet<dAmnUser*> users;
 
 public:
     enum KnownPrivs
@@ -77,6 +80,9 @@ public:
     int getAvatarsPriv() const;
     int getWebsitesPriv() const;
     int getObjectsPriv() const;
+
+    void addUser(dAmnUser* user);
+    void removeUser(dAmnUser* user);
 };
 
 #endif // DAMNPRIVCLASS_H

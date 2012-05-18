@@ -19,12 +19,13 @@
 
 #include "deviant.h"
 
+#include <QObject>
 #include <QString>
 #include <QChar>
 #include <QUrl>
 
-Deviant::Deviant(const QString& name, const QChar& symbol, int usericon, const QString& realname, const QString& type)
-    : name(name), realname(realname), type(type), symbol(symbol), usericon(usericon)
+Deviant::Deviant(QObject* parent, const QString& name, const QChar& symbol, int usericon, const QString& realname, const QString& type)
+    : QObject(parent), name(name), realname(realname), type(type), symbol(symbol), usericon(usericon)
 {
 }
 
@@ -69,9 +70,9 @@ QUrl Deviant::getIconUrl() const
     if(this->usericon)
     {
         QChar chunk = name[0];
-        urlstr += (chunk.isLetterOrNumber()? '_' : chunk) + '/';
+        urlstr += (chunk.isLetterOrNumber()? chunk : '_') + '/';
         chunk = name[1];
-        urlstr += (chunk.isLetterOrNumber()? '_' : chunk) + '/';
+        urlstr += (chunk.isLetterOrNumber()? chunk : '_') + '/';
         urlstr += name;
     }
     else
@@ -91,5 +92,5 @@ QUrl Deviant::getIconUrl() const
 
 QUrl Deviant::getProfileUrl() const
 {
-    return QUrl(tr("http://%1.deviantart.com/").arg(this->name.toLower()));
+    return QUrl(QString("http://%1.deviantart.com/").arg(this->name.toLower()));
 }
