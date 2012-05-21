@@ -323,13 +323,18 @@ void dAmnSession::handleProperty(dAmnPacket* packet)
     {
     case PropertyEvent::topic:
         chatroom->setTopic(event->getValue());
+        break;
     case PropertyEvent::title:
         chatroom->setTitle(event->getValue());
+        break;
     case PropertyEvent::privclasses:
         chatroom->updatePrivclasses(event->getValue());
+        break;
     case PropertyEvent::members:
-        // NYI
+        chatroom->processMembers(event->getValue());
+        break;
 
+    case PropertyEvent::unknown:
     default:
         MNLIB_WARN("Got unknown property %s for chatroom %s.",
                    qPrintable(event->getPropertyString()),

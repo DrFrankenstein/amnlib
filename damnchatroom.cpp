@@ -164,6 +164,53 @@ void dAmnChatroom::updatePrivclasses(const QString& data)
     }
 }
 
+void dAmnChatroom::processMembers(const QString& data)
+{
+    QString members = data;
+    QTextStream reader (&members);
+    QString name, pc, realname, type_name;
+    int usericon = 0;
+    QChar symbol = 0;
+
+    while(!reader.atEnd())
+    {
+        QString line = reader.readLine();
+
+        if(line.startsWith("member "))
+        {
+            if(!name.isEmpty())
+            {
+                this->addMember(name, pc, usericon, symbol, realname, type_name);
+            }
+
+            pc = realname = type_name = QString();
+            symbol = usericon = 0;
+
+            name = line.mid(7); // indexOf(' ')
+        }
+        else if(!line.isEmpty())
+        {
+            QPair<QString,QString> pair = dAmnPacketParser::splitPair(line);
+            if(pair.first == "pc") pc = pair.second;
+            else if(pair.first == "usericon")
+            {
+                bool ok;
+                usericon = pair.second.toInt(&ok);
+                if(!ok) MNLIB_WARN("Invalid usericon value for user %s: %s",
+                                   qPrintable(name), qPrintable(pair.second));
+            }
+            else if(pair.first == "symbol") symbol = pair.second.at(0);
+            else if(pair.first == "realname") realname = pair.second;
+            else if(pair.first == "typename") type_name = pair.second;
+            else
+            {
+                MNLIB_WARN("Unknown user property %s = %s for %s",
+                           qPrintable(pair.first), qPrintable(pair.second), qPrintable(name));
+            }
+        }
+    }
+}
+
 void dAmnChatroom::part()
 {
     this->session()->part(this->getId());
@@ -251,52 +298,6 @@ void dAmnChatroom::sendAdminCommand(const QString& command)
 {
     dAmnPacket packet (this->session(), "admin", QString(), command);
     this->send(packet);
-}
-
-void dAmnChatroom::processMembers(const QByteArray& data)
-{
-    QTextStream reader (data);
-    QString name, pc, realname, type_name;
-    int usericon = 0;
-    QChar symbol = 0;
-
-    while(!reader.atEnd())
-    {
-        QString line = reader.readLine();
-
-        if(line.startsWith("member "))
-        {
-            if(!name.isEmpty())
-            {
-                this->addMember(name, pc, usericon, symbol, realname, type_name);
-            }
-
-            pc = realname = type_name = QString();
-            symbol = usericon = 0;
-
-            name = line.mid(7); // indexOf(' ')
-        }
-        else if(!line.isEmpty())
-        {
-            QPair<QString,QString> pair = dAmnPacketParser::splitPair(line);
-            if(pair.first == "pc") pc = pair.second;
-            else if(pair.first == "usericon")
-            {
-                bool ok;
-                usericon = pair.second.toInt(&ok);
-                if(!ok) MNLIB_WARN("Invalid usericon value for user %s: %s",
-                                   qPrintable(name), qPrintable(pair.second));
-            }
-            else if(pair.first == "symbol") symbol = pair.second.at(0);
-            else if(pair.first == "realname") realname = pair.second;
-            else if(pair.first == "typename") type_name = pair.second;
-            else
-            {
-                MNLIB_WARN("Unknown user property %s = %s for %s",
-                           qPrintable(pair.first), qPrintable(pair.second), qPrintable(name));
-            }
-        }
-    }
 }
 
 void dAmnChatroom::send(const dAmnPacket& packet)

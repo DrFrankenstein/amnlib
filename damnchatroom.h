@@ -65,6 +65,8 @@ public:
 
     void updatePrivclasses(const QString& data);
 
+    void processMembers(const QString& data);
+
     void part();
 
     void say(const QString& message);
@@ -85,8 +87,6 @@ public:
     void setRoomProperty(const QString& property, const QString& value);
 
     void sendAdminCommand(const QString& command);
-
-    void processMembers(const QByteArray& data);
 
 private:
     Type type;
