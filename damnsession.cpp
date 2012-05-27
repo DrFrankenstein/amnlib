@@ -128,6 +128,8 @@ void dAmnSession::handlePacket(dAmnPacket* packet)
     case dAmnPacket::property:
         this->handleProperty(packet);
         break;
+    case dAmnPacket::whois:
+        this->handleWhois(packet);
 
     default: qt_noop();
     }
@@ -291,7 +293,9 @@ void dAmnSession::handlePart(dAmnPacket* packet)
 
     if(event->getEvent() == PartedEvent::ok)
     {
-        this->chatrooms.remove(event->getChatroom().toIdString());
+        QString id = event->getChatroom().toIdString();
+        delete this->chatrooms[id];
+        this->chatrooms.remove(id);
     }
 
     emit parted(event);
@@ -340,4 +344,11 @@ void dAmnSession::handleProperty(dAmnPacket* packet)
                    qPrintable(event->getPropertyString()),
                    qPrintable(event->getChatroom().toString()));
     }
+}
+
+void dAmnSession::handleWhois(dAmnPacket* packet)
+{
+    WhoisEvent* event = new WhoisEvent(this, packet);
+
+    emit gotWhois(event);
 }
