@@ -37,6 +37,7 @@ dAmnPacket::dAmnPacket(dAmnSession* parent, const QString& cmd, const QString& p
     : dAmnObject(parent),
         cmd(cmd), param(param), data(data), args(QHash<QString, QString>()), subpacket(NULL)
 {
+    this->setKCmd();
 }
 
 dAmnPacket::dAmnPacket(const dAmnPacket& packet)
@@ -60,14 +61,18 @@ void dAmnPacket::initKCmd()
 #   define KCMD(name) kcmd_map[#name] = name;
     KCMD(dAmnClient) KCMD(dAmnServer) KCMD(login)
     KCMD(join) KCMD(part)
+    KCMD(ping) KCMD(pong)
     KCMD(send) KCMD(recv)
     KCMD(promote) KCMD(demote)
     KCMD(kick) KCMD(kicked) KCMD(ban) KCMD(unban)
     KCMD(get) KCMD(set)
     KCMD(admin) KCMD(disconnect) KCMD(kill)
     KCMD(property)
+
     KCMD(msg) KCMD(action) KCMD(npmsg)
-    KCMD(userinfo) KCMD(whois) KCMD(privchg)
+    KCMD(userinfo)
+    KCMD(whois)
+    KCMD(privchg)
 #   undef KCMD
 }
 
@@ -92,7 +97,8 @@ QByteArray dAmnPacket::toByteArray() const
 
     builder << '\n';
 
-    foreach(QString argn, this->args.keys())
+    QList<QString> keys = this->args.keys();
+    foreach(QString argn, keys)
     {
         builder << argn << '=' << this->args[argn] << '\n';
     }
@@ -112,14 +118,14 @@ const QHash<QString, QString>& dAmnPacket::getArgs() const
     return this->args;
 }
 
+QHash<QString, QString>& dAmnPacket::getArgs()
+{
+    return this->args;
+}
+
 void dAmnPacket::setArgs(const QHash<QString, QString> &args)
 {
     this->args = args;
-}
-
-QString dAmnPacket::operator[](const QString& arg) const
-{
-    return this->args[arg];
 }
 
 dAmnPacket::KnownCmd dAmnPacket::command() const

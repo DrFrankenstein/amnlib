@@ -34,8 +34,8 @@ class dAmnSession;
 #include "damnobject.h"
 #include "damnsession.h"
 
-ScrapingAuthenticationProvider::ScrapingAuthenticationProvider(dAmnSession* parent):
-    dAmnObject(parent), http(this)
+ScrapingAuthenticationProvider::ScrapingAuthenticationProvider(QObject* parent):
+    QObject(parent), http(this)
 {
     connect(&this->http, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             this, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -47,8 +47,8 @@ void ScrapingAuthenticationProvider::requestAuthToken(const QString& username,
                                                       const QString& password,
                                                       bool remember_me)
 {
-    if(this->cookieReply)
-        return;
+    //if(this->cookieReply)
+    //    return;
 
     QByteArray loginData = QString("username=%1&password=%2&remember_me=%3").arg(
                 QUrl::toPercentEncoding(username),
@@ -70,7 +70,7 @@ void ScrapingAuthenticationProvider::requestAuthToken(const QString& username,
 
 void ScrapingAuthenticationProvider::gotCookie()
 {
-    QNetworkRequest req = this->cookieReply->request();
+    //QNetworkRequest req = this->cookieReply->request();
 
     //qDebug() << "REQUEST--------------------------------------------------------";
     //qDebug() << "ContentTypeHeader=" << req.header(QNetworkRequest::ContentTypeHeader);

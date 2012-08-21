@@ -65,7 +65,7 @@ LoginEvent::LoginEvent(dAmnSession* parent, dAmnPacket* packet)
       : dAmnEvent(parent, packet),
         username(packet->getParam()),
         event(unknown),
-        eventstr((*packet)["e"])
+        eventstr(packet->getArgs()["e"])
 {
     if(this->eventstr == "ok")
         this->event = ok;
@@ -132,7 +132,7 @@ const dAmnChatroomIdentifier& ChatroomEvent::getChatroom() const
 JoinedEvent::JoinedEvent(dAmnSession* parent, dAmnPacket* packet)
       : ChatroomEvent(parent, packet),
         event(unknown),
-        eventstr((*packet)["e"])
+        eventstr(packet->getArgs()["e"])
 {
     if(this->eventstr == "ok")
         this->event = ok;
@@ -155,7 +155,7 @@ const QString& JoinedEvent::getEventString() const
 PartedEvent::PartedEvent(dAmnSession* parent, dAmnPacket* packet)
       : ChatroomEvent(parent, packet),
         event(unknown),
-        eventstr((*packet)["e"])
+        eventstr(packet->getArgs()["e"])
 {
     if(this->eventstr == "ok")
         this->event = ok;
@@ -164,9 +164,9 @@ PartedEvent::PartedEvent(dAmnSession* parent, dAmnPacket* packet)
     else if(this->eventstr == "bad namespace")
         this->event = bad_namespace;
 
-    if((*packet)["r"] != NULL)
+    if(packet->getArgs()["r"] != NULL)
     {
-        this->reason = (*packet)["r"];
+        this->reason = packet->getArgs()["r"];
     }
 }
 PartedEvent::EventCode PartedEvent::getEvent() const
@@ -185,8 +185,8 @@ const QString& PartedEvent::getReason() const
 PropertyEvent::PropertyEvent(dAmnSession* parent, dAmnPacket* packet)
       : ChatroomEvent(parent, packet),
         property(unknown),
-        propertystr((*packet)["e"]),
-        author((*packet)["by"])
+        propertystr(packet->getArgs()["e"]),
+        author(packet->getArgs()["by"])
 {
     if(this->propertystr == "topic")
         this->property = topic;
@@ -198,7 +198,7 @@ PropertyEvent::PropertyEvent(dAmnSession* parent, dAmnPacket* packet)
         this->property = members;
 
     bool ok;
-    this->timestamp = QDateTime::fromTime_t((*packet)["ts"].toUInt(&ok, 10));
+    this->timestamp = QDateTime::fromTime_t(packet->getArgs()["ts"].toUInt(&ok, 10));
 }
 PropertyEvent::PropertyCode PropertyEvent::getProperty() const
 {
@@ -224,7 +224,7 @@ const QString& PropertyEvent::getValue() const
 WhoisEvent::WhoisEvent(dAmnSession* parent, dAmnPacket* packet)
     : dAmnEvent(parent, packet)
 {
-    Q_ASSERT((*packet)["p"] == "info");
+    Q_ASSERT(packet->getArgs()["p"] == "info");
 
     this->parseData();
 }
@@ -373,7 +373,7 @@ MsgEvent::MsgEvent(dAmnSession* parent, dAmnPacket* packet)
 
     Q_ASSERT(data.getParam() == "main");
 
-    this->username = data["from"];
+    this->username = data.getArgs()["from"];
     this->message  = data.getData();
 }
 const QString& MsgEvent::getUserName() const
@@ -392,7 +392,7 @@ ActionEvent::ActionEvent(dAmnSession* parent, dAmnPacket* packet)
 
     Q_ASSERT(data.getParam() == "main");
 
-    this->username = data["from"];
+    this->username = data.getArgs()["from"];
     this->action   = data.getData();
 }
 const QString& ActionEvent::getUserName() const
@@ -422,7 +422,7 @@ PartEvent::PartEvent(dAmnSession* parent, dAmnPacket* packet)
     dAmnPacket& data = packet->getSubPacket();
 
     this->username = data.getParam();
-    this->reason = data["r"];
+    this->reason = data.getArgs()["r"];
 }
 const QString& PartEvent::getUserName() const
 {
@@ -439,8 +439,8 @@ PrivchgEvent::PrivchgEvent(dAmnSession* parent, dAmnPacket* packet)
     dAmnPacket& data = packet->getSubPacket();
 
     this->username = data.getParam();
-    this->admin = data["by"];
-    this->privclass = data["pc"];
+    this->admin = data.getArgs()["by"];
+    this->privclass = data.getArgs()["pc"];
 }
 const QString& PrivchgEvent::getUserName() const
 {
@@ -461,7 +461,7 @@ KickEvent::KickEvent(dAmnSession* parent, dAmnPacket* packet)
     dAmnPacket& data = packet->getSubPacket();
 
     this->username = data.getParam();
-    this->kicker = data["by"];
+    this->kicker = data.getArgs()["by"];
     this->reason = data.getData();
 }
 const QString& KickEvent::getUserName() const
@@ -490,9 +490,9 @@ PrivUpdateEvent::PrivUpdateEvent(dAmnSession* parent, dAmnPacket* packet)
     else if(this->actionstr == "update")
         this->action = update;
 
-    this->username = data["by"];
-    this->privclass = data["name"];
-    this->privstring = data["privs"];
+    this->username = data.getArgs()["by"];
+    this->privclass = data.getArgs()["name"];
+    this->privstring = data.getArgs()["privs"];
 }
 PrivUpdateEvent::ActionCode PrivUpdateEvent::getAction() const
 {
@@ -527,13 +527,13 @@ PrivMoveEvent::PrivMoveEvent(dAmnSession* parent, dAmnPacket* packet)
     else if(this->actionstr == "move")
         this->action = move;
 
-    this->username = data["by"];
-    this->oldname = data["prev"];
-    this->newname = data["name"];
+    this->username = data.getArgs()["by"];
+    this->oldname = data.getArgs()["prev"];
+    this->newname = data.getArgs()["name"];
 
     bool ok;
     if(this->action == move)
-        this->usersaffected = data["n"].toInt(&ok, 10);
+        this->usersaffected = data.getArgs()["n"].toInt(&ok, 10);
     if(this->action != move || !ok)
         this->usersaffected = -1;
 }
@@ -567,10 +567,10 @@ PrivRemoveEvent::PrivRemoveEvent(dAmnSession* parent, dAmnPacket* packet)
 {
     dAmnPacket& data = packet->getSubPacket();
 
-    this->username = data["by"];
-    this->privclass = data["name"];
+    this->username = data.getArgs()["by"];
+    this->privclass = data.getArgs()["name"];
     bool ok;
-    this->usersaffected = data["n"].toInt(&ok, 10);
+    this->usersaffected = data.getArgs()["n"].toInt(&ok, 10);
     if(!ok) this->usersaffected = -1;
 }
 const QString& PrivRemoveEvent::getUserName() const
@@ -635,7 +635,7 @@ QStringList PrivUsersEvent::getUsersInPrivClass(const QString& privclass) const
 ///////////////////////////////////////////////////////////////////////////////
 KickedEvent::KickedEvent(dAmnSession* parent, dAmnPacket* packet)
     : ChatroomEvent(parent, packet),
-      kicker((*packet)["by"]),
+      kicker(packet->getArgs()["by"]),
       reason(packet->getData())
 {
 }
@@ -651,7 +651,7 @@ const QString& KickedEvent::getReason() const
 DisconnectEvent::DisconnectEvent(dAmnSession* parent, dAmnPacket* packet)
     : dAmnEvent(parent, packet),
       event(unknown),
-      eventstr((*packet)["e"])
+      eventstr(packet->getArgs()["e"])
 {
     if(this->eventstr == "ok")
         this->event = ok;
@@ -674,7 +674,7 @@ const QString& DisconnectEvent::getEventString() const
 SendError::SendError(dAmnSession* parent, dAmnPacket* packet)
     : ChatroomEvent(parent, packet),
       error(unknown),
-      errormsg((*packet)["e"])
+      errormsg(packet->getArgs()["e"])
 {
     if(this->errormsg == "nothing to send")
         this->error = nothing_to_send;
@@ -698,9 +698,9 @@ const QString& SendError::getErrorMessage() const
 ///////////////////////////////////////////////////////////////////////////////
 KickError::KickError(dAmnSession* parent, dAmnPacket* packet)
     : ChatroomEvent(parent, packet),
-      username((*packet)["u"]),
+      username(packet->getArgs()["u"]),
       error(unknown),
-      errormsg((*packet)["e"])
+      errormsg(packet->getArgs()["e"])
 {
     if(this->errormsg == "no such member")
         this->error = no_such_member;
@@ -722,9 +722,9 @@ const QString& KickError::getUserName() const
 ///////////////////////////////////////////////////////////////////////////////
 GetError::GetError(dAmnSession* parent, dAmnPacket* packet)
     : ChatroomEvent(parent, packet),
-      property((*packet)["p"]),
+      property(packet->getArgs()["p"]),
       error(unknown),
-      errormsg((*packet)["e"])
+      errormsg(packet->getArgs()["e"])
 {
     if(this->errormsg == "not joined")
         this->error = not_joined;
@@ -746,9 +746,9 @@ const QString& GetError::getProperty() const
 ///////////////////////////////////////////////////////////////////////////////
 SetError::SetError(dAmnSession* parent, dAmnPacket* packet)
     : ChatroomEvent(parent, packet),
-      property((*packet)["p"]),
+      property(packet->getArgs()["p"]),
       error(unknown),
-      errormsg((*packet)["e"])
+      errormsg(packet->getArgs()["e"])
 {
     if(this->errormsg == "not joined")
         this->error = not_joined;
@@ -773,7 +773,7 @@ const QString& SetError::getProperty() const
 KillError::KillError(dAmnSession* parent, dAmnPacket* packet)
     : dAmnEvent(parent, packet),
       error(unknown),
-      errormsg((*packet)["e"])
+      errormsg(packet->getArgs()["e"])
 {
     this->username = packet->getParam().split(':')[1];
 

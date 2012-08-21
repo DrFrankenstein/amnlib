@@ -34,7 +34,7 @@ class QSslError;
 
 class dAmnSession;
 
-class MNLIBSHARED_EXPORT ScrapingAuthenticationProvider : public dAmnObject
+class MNLIBSHARED_EXPORT ScrapingAuthenticationProvider : public QObject
 {
     Q_OBJECT
 
@@ -42,7 +42,7 @@ class MNLIBSHARED_EXPORT ScrapingAuthenticationProvider : public dAmnObject
     QNetworkReply* cookieReply, * tokenReply;
 
 public:
-    explicit ScrapingAuthenticationProvider(dAmnSession* parent);
+    explicit ScrapingAuthenticationProvider(QObject* parent = NULL);
 
     void requestAuthToken(const QString& username, const QString& password, bool remember_me = true);
 

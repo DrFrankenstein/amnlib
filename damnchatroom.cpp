@@ -264,7 +264,7 @@ void dAmnChatroom::kick(const dAmnUser &user, const QString& reason)
 {
     dAmnPacket packet (this->session(), "kick", this->getId().toIdString(),
                        reason);
-    packet["u"] = user.getName();
+    packet.getArgs().insert("u", user.getName());
     this->session()->send(packet);
 }
 
@@ -282,14 +282,14 @@ void dAmnChatroom::unban(const dAmnUser &user)
 void dAmnChatroom::getRoomProperty(const QString& property)
 {
     dAmnPacket packet (this->session(), "get", this->getId().toIdString());
-    packet["p"] = property;
+    packet.getArgs().insert("p", property);
 
     this->session()->send(packet);
 }
 void dAmnChatroom::setRoomProperty(const QString& property, const QString& value)
 {
     dAmnPacket packet (this->session(), "set", this->getId().toIdString(), value);
-    packet["p"] = property;
+    packet.getArgs().insert("p", property);
 
     this->session()->send(packet);
 }

@@ -42,6 +42,7 @@ void dAmnPacketDevice::readPacket()
 
         if(c) packetData.append(c);
     } while(c);
+    MNLIB_DEBUG("%s", packetData.data());
 
     emit packetReady(this->parser.parsePacket(&packetData));
 }

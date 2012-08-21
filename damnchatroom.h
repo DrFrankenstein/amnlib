@@ -88,6 +88,16 @@ public:
 
     void sendAdminCommand(const QString& command);
 
+signals:
+    void message(const QString& user, const QString& content);
+    void action(const QString& user, const QString& content);
+
+    void joined(const QString& user);
+    void parted(const QString& user, const QString& reason);
+
+    void privchg(const QString& user, const QString& by, const QString& pc);
+    void kicked(const QString& user, const QString& by, const QString& reason);
+
 private:
     Type type;
     QString name, title, topic;

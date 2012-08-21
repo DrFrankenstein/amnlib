@@ -73,8 +73,9 @@ public:
 
     // Retrieves the argument list.
     const QHash<QString, QString>& getArgs() const;
+    QHash<QString, QString>& getArgs();
     void setArgs(const QHash<QString, QString>& args);
-    QString operator[](const QString& arg) const;
+    //QString operator[](const QString& arg);
 
     KnownCmd command() const;
 

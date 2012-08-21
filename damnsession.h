@@ -56,7 +56,7 @@ class MNLIBSHARED_EXPORT dAmnSession : public QObject
 public:
     enum State
     {
-        offline, logging_in, online
+        offline, connecting, connected, logging_in, online
     };
 
 private:
@@ -64,9 +64,10 @@ private:
 
 private slots:
     void handlePacket(dAmnPacket* packet);
+    void socketStateChange(QAbstractSocket::SocketState socketState);
 
 public:
-    dAmnSession(const QByteArray& token);
+    dAmnSession(const QString& username, const QByteArray &token);
     virtual ~dAmnSession();
 
     const QString& getUserName() const;
@@ -83,6 +84,9 @@ public:
 
     void connectToHost();
     void send(dAmnPacket& packet);
+
+    void login();
+
 
     void join(const QString& name, dAmnChatroom::Type type = dAmnChatroom::chat);
     void join(const dAmnChatroomIdentifier& id);
@@ -132,9 +136,14 @@ signals:
     void setError(const SetError* error);
     void killError(const KillError* error);
 
+    void socketError(QAbstractSocket::SocketError socketError);
+
+    void stateChange(State state);
+
 private:
-    void login();
     void sendCredentials();
+
+    void setState(State state);
 
     void handleHandshake(dAmnPacket* packet);
     void handleLogin(dAmnPacket* packet);

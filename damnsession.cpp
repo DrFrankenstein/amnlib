@@ -24,10 +24,18 @@
 #include <QHostAddress>
 #include <QRegExp>
 
-dAmnSession::dAmnSession(const QByteArray& token)
-    : state(offline), packetdevice(this, this->socket), auth_token(token)
+dAmnSession::dAmnSession(const QString& username, const QByteArray& token)
+    : state(offline), packetdevice(this, this->socket), socket(this),
+      user_name(username), auth_token(token)
 {
     user_agent = tr("mnlib/").append(MNLIB_VERSION);
+
+    connect(&this->socket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SIGNAL(socketError(QAbstractSocket::SocketError)));
+    connect(&this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
+            this, SLOT(socketStateChange(QAbstractSocket::SocketState)));
+    connect(&this->packetdevice, SIGNAL(packetReady(dAmnPacket*)),
+            this, SLOT(handlePacket(dAmnPacket*)));
 }
 
 dAmnSession::~dAmnSession()
@@ -94,11 +102,10 @@ void dAmnSession::connectToHost()
 {
     if(this->state == offline)
     {
-        connect(&this->socket, SIGNAL(connected()),
-                this, SLOT(client()));
-        this->socket.connectToHost(QHostAddress("chat.deviantart.com"), 3900, QIODevice::ReadWrite);
-
-        this->login();
+        //connect(&this->socket, SIGNAL(connected()),
+        //        this, SLOT(login()));
+        this->socket.connectToHost("chat.deviantart.com", 3900, QIODevice::ReadWrite);
+        //this->setState(connecting);
     }
     else
     {
@@ -130,24 +137,44 @@ void dAmnSession::handlePacket(dAmnPacket* packet)
         break;
     case dAmnPacket::whois:
         this->handleWhois(packet);
+    case dAmnPacket::recv:
+
 
     default: qt_noop();
     }
 }
 
+void dAmnSession::socketStateChange(QAbstractSocket::SocketState socketState)
+{
+    switch(socketState)
+    {
+    case QAbstractSocket::ConnectingState:
+        this->setState(connecting);
+        break;
+    case QAbstractSocket::ConnectedState:
+        this->setState(connected);
+        this->login();
+        break;
+    case QAbstractSocket::UnconnectedState:
+        this->setState(offline);
+    }
+}
+
 void dAmnSession::send(dAmnPacket& packet)
 {
-    this->socket.write(packet.toByteArray());
+    QByteArray data = packet.toByteArray();
+    MNLIB_DEBUG("%s", data.data());
+    this->socket.write(data);
 }
 
 void dAmnSession::login()
 {
     dAmnPacket handshakePacket (this, "dAmnClient", DAMN_VERSION);
-    handshakePacket["agent"] = this->user_agent;
+    handshakePacket.getArgs().insert("agent", this->user_agent);
 
     this->send(handshakePacket);
 
-    this->state = logging_in;
+    this->setState(logging_in);
 }
 
 void dAmnSession::join(const dAmnChatroomIdentifier& id)
@@ -239,9 +266,15 @@ void dAmnSession::handleHandshake(dAmnPacket* packet)
 void dAmnSession::sendCredentials()
 {
     dAmnPacket loginPacket (this, "login", this->user_name);
-    loginPacket["pk"] = this->auth_token;
+    loginPacket.getArgs().insert("pk", this->auth_token);
 
     this->send(loginPacket);
+}
+
+void dAmnSession::setState(State state)
+{
+    this->state = state;
+    emit stateChange(state);
 }
 
 void dAmnSession::handleLogin(dAmnPacket* packet)
@@ -256,11 +289,11 @@ void dAmnSession::handleLogin(dAmnPacket* packet)
         this->type_name = event->getTypeName();
         this->gpc       = event->getGpc();
 
-        this->state     = online;
+        this->setState(online);
     }
     else
     {
-        this->state     = offline;
+        this->setState(offline);
         this->socket.disconnectFromHost();
     }
 
@@ -352,3 +385,4 @@ void dAmnSession::handleWhois(dAmnPacket* packet)
 
     emit gotWhois(event);
 }
+
