@@ -34,15 +34,25 @@ dAmnPacketDevice::dAmnPacketDevice(dAmnSession *session, QIODevice& device):
 void dAmnPacketDevice::readPacket()
 {
     char c;
-    QByteArray packetData;
+    static QByteArray packetData;
 
     do
     {
-        this->device.getChar(&c);
+        while(this->device.getChar(&c) && c)
+        {
+            packetData.append(c);
+        }
 
-        if(c) packetData.append(c);
-    } while(c);
-    MNLIB_DEBUG("%s", packetData.data());
+        if(!c)
+        {   // '\0'
+            MNLIB_DEBUG("Dispatching %s", packetData.data());
+            dAmnPacket* packet = this->parser.parsePacket(&packetData);
 
-    emit packetReady(this->parser.parsePacket(&packetData));
+            if(packet)
+                emit packetReady(packet);
+
+            packetData.clear();
+        }
+    }
+    while(this->device.bytesAvailable());
 }
