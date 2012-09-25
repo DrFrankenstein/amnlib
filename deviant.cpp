@@ -25,33 +25,34 @@
 #include <QUrl>
 
 Deviant::Deviant(QObject* parent, const QString& name, const QChar& symbol, int usericon, const QString& realname, const QString& type)
-    : QObject(parent), name(name), realname(realname), type(type), symbol(symbol), usericon(usericon)
+    : QObject(parent), _name(name), _realname(realname), _type(type), _symbol(symbol), _usericon(usericon)
 {
+    this->setObjectName(this->_name);
 }
 
-const QString& Deviant::getName() const
+const QString& Deviant::name() const
 {
-    return this->name;
+    return this->_name;
 }
 
-const QString& Deviant::getRealName() const
+const QString& Deviant::realName() const
 {
-    return this->realname;
+    return this->_realname;
 }
 
-const QString& Deviant::getTypeName() const
+const QString& Deviant::typeName() const
 {
-    return this->type;
+    return this->_type;
 }
 
-const QChar& Deviant::getSymbol() const
+const QChar& Deviant::symbol() const
 {
-    return this->symbol;
+    return this->_symbol;
 }
 
-Deviant::IconType Deviant::getIconType() const
+Deviant::IconType Deviant::iconType() const
 {
-    switch(this->usericon & 3)
+    switch(this->_usericon & 3)
     {
     case 0:
     case 1: return gif;
@@ -62,12 +63,12 @@ Deviant::IconType Deviant::getIconType() const
     return gif; // keep compiler happy.
 }
 
-QUrl Deviant::getIconUrl() const
+QUrl Deviant::iconUrl() const
 {
     QString urlstr = "http://a.deviantart.com/avatars/",
-            name = this->name.toLower();
+            name = this->_name.toLower();
 
-    if(this->usericon)
+    if(this->_usericon)
     {
         QChar chunk = name[0];
         urlstr += (chunk.isLetterOrNumber()? chunk : '_') + '/';
@@ -80,7 +81,7 @@ QUrl Deviant::getIconUrl() const
         urlstr += "default";
     }
 
-    switch(this->getIconType())
+    switch(this->iconType())
     {
     case gif: urlstr += ".gif"; break;
     case jpg: urlstr += ".jpg"; break;
@@ -90,7 +91,7 @@ QUrl Deviant::getIconUrl() const
     return QUrl(urlstr);
 }
 
-QUrl Deviant::getProfileUrl() const
+QUrl Deviant::profileUrl() const
 {
-    return QUrl(QString("http://%1.deviantart.com/").arg(this->name.toLower()));
+    return QUrl(QString("http://%1.deviantart.com/").arg(this->_name.toLower()));
 }

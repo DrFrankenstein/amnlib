@@ -25,34 +25,32 @@
 class dAmnSession;
 
 dAmnPacketDevice::dAmnPacketDevice(dAmnSession *session, QIODevice& device):
-    dAmnObject(session), device(device), parser(session)
+    dAmnObject(session), _device(device), _parser(session)
 {
-    connect(&this->device, SIGNAL(readyRead()),
+    connect(&this->_device, SIGNAL(readyRead()),
             SLOT(readPacket()));
 }
 
 void dAmnPacketDevice::readPacket()
 {
     char c;
-    static QByteArray packetData;
 
     do
     {
-        while(this->device.getChar(&c) && c)
+        while(this->_device.getChar(&c) && c)
         {
-            packetData.append(c);
+            this->_packetBuffer.append(c);
         }
 
         if(!c)
         {   // '\0'
-            MNLIB_DEBUG("Dispatching %s", packetData.data());
-            dAmnPacket* packet = this->parser.parsePacket(&packetData);
+            dAmnPacket* packet = this->_parser.parsePacket(&this->_packetBuffer);
 
             if(packet)
                 emit packetReady(packet);
 
-            packetData.clear();
+            this->_packetBuffer.clear();
         }
     }
-    while(this->device.bytesAvailable());
+    while(this->_device.bytesAvailable());
 }

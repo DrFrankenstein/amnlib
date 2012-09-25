@@ -31,9 +31,9 @@ class dAmnSession;
 
 class MNLIBSHARED_EXPORT dAmnPacket : public dAmnObject
 {
-    QString cmd, param, data;
-    QHash<QString, QString> args;
-    dAmnPacket* subpacket;
+    QString _cmd, _param, _data;
+    QHash<QString, QString> _args;
+    dAmnPacket* _subpacket;
 
     void setKCmd();
     static void initKCmd();
@@ -58,8 +58,8 @@ public:
         privchg
     };
 protected:
-    KnownCmd kcmd;
-    static QHash<QString, KnownCmd> kcmd_map;
+    KnownCmd _kcmd;
+    static QHash<QString, KnownCmd> _kcmd_map;
 public:
 
     // Creates a null packet.
@@ -72,19 +72,21 @@ public:
     virtual ~dAmnPacket();
 
     // Retrieves the argument list.
-    const QHash<QString, QString>& getArgs() const;
-    QHash<QString, QString>& getArgs();
+    const QHash<QString, QString>& args() const;
+    QHash<QString, QString>& args();
     void setArgs(const QHash<QString, QString>& args);
-    //QString operator[](const QString& arg);
+
+    QString arg(const QString& name) const;
+    void setArg(const QString& name, const QString& value);
 
     KnownCmd command() const;
 
-    const QString& getParam() const;
-    const QString& getData() const;
+    const QString& param() const;
+    const QString& data() const;
 
     QByteArray toByteArray() const;
 
-    dAmnPacket& getSubPacket();
+    dAmnPacket& subPacket();
 };
 
 #endif // DAMNPACKET_H

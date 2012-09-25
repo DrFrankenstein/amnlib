@@ -34,14 +34,14 @@ public:
     TimeSpan(uint hours, uint minutes, uint seconds);
     TimeSpan(uint days, uint hours, uint minutes, uint seconds);
 
-    uint getSeconds() const;
-    uint getMinutes() const;
-    uint getHours() const;
-    uint getDays() const;
+    uint seconds() const;
+    uint minutes() const;
+    uint hours() const;
+    uint days() const;
 
-    uint getTotalSeconds() const;
-    double getTotalMinutes() const;
-    double getTotalHours() const;
+    uint totalSeconds() const;
+    double totalMinutes() const;
+    double totalHours() const;
 
     TimeSpan& operator +=(const TimeSpan& right);
     TimeSpan& operator -=(const TimeSpan& right);

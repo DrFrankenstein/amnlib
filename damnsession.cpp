@@ -25,16 +25,16 @@
 #include <QRegExp>
 
 dAmnSession::dAmnSession(const QString& username, const QByteArray& token)
-    : state(offline), packetdevice(this, this->socket), socket(this),
-      user_name(username), auth_token(token)
+    : _state(offline), _packetdevice(this, this->_socket), _socket(this),
+      _username(username), _authtoken(token)
 {
-    user_agent = tr("mnlib/").append(MNLIB_VERSION);
+    _useragent = tr("mnlib/").append(MNLIB_VERSION);
 
-    connect(&this->socket, SIGNAL(error(QAbstractSocket::SocketError)),
+    connect(&this->_socket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SIGNAL(socketError(QAbstractSocket::SocketError)));
-    connect(&this->socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
+    connect(&this->_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
             this, SLOT(socketStateChange(QAbstractSocket::SocketState)));
-    connect(&this->packetdevice, SIGNAL(packetReady(dAmnPacket*)),
+    connect(&this->_packetdevice, SIGNAL(packetReady(dAmnPacket*)),
             this, SLOT(handlePacket(dAmnPacket*)));
 }
 
@@ -42,19 +42,19 @@ dAmnSession::~dAmnSession()
 {
 }
 
-const QString& dAmnSession::getUserName() const
+const QString& dAmnSession::userName() const
 {
-    return this->user_name;
+    return this->_username;
 }
 
-dAmnSession::State dAmnSession::getState() const
+dAmnSession::State dAmnSession::state() const
 {
-    return this->state;
+    return this->_state;
 }
 
-QHash<QString, dAmnUser*>& dAmnSession::getUsers()
+QHash<QString, dAmnUser*>& dAmnSession::users()
 {
-    return this->users;
+    return this->_users;
 }
 
 dAmnUser* dAmnSession::addUser(const QString& name,
@@ -63,12 +63,12 @@ dAmnUser* dAmnSession::addUser(const QString& name,
                                const QString &realname,
                                const QString &type_name)
 {
-    dAmnUser* user = this->users[name];
+    dAmnUser* user = this->_users.value(name);
 
     if(!user)
     {
         user = new dAmnUser(this, name, symbol, usericon, realname, type_name);
-        this->users[name] = user;
+        this->_users.insert(name, user);
     }
 
     return user;
@@ -76,23 +76,23 @@ dAmnUser* dAmnSession::addUser(const QString& name,
 
 void dAmnSession::cleanupUser(const QString& name)
 {
-    dAmnUser* user = this->users[name];
+    dAmnUser* user = this->_users.value(name);
     if(!user)
     {
         MNLIB_WARN("Can't cleanup user %s we don't know about.", qPrintable(name));
         return;
     }
 
-    if(user->getChatrooms().isEmpty())
+    if(user->chatrooms().isEmpty())
     {
-        this->users.remove(name);
+        this->_users.remove(name);
         delete user;
     }
 }
 
 bool dAmnSession::isMe(const QString& name)
 {
-    if(name == this->user_name)
+    if(name == this->_username)
         return true;
 
     return false;
@@ -100,11 +100,11 @@ bool dAmnSession::isMe(const QString& name)
 
 void dAmnSession::connectToHost()
 {
-    if(this->state == offline)
+    if(this->_state == offline)
     {
         //connect(&this->socket, SIGNAL(connected()),
         //        this, SLOT(login()));
-        this->socket.connectToHost("chat.deviantart.com", 3900, QIODevice::ReadWrite);
+        this->_socket.connectToHost("chat.deviantart.com", 3900, QIODevice::ReadWrite);
         //this->setState(connecting);
     }
     else
@@ -140,7 +140,9 @@ void dAmnSession::handlePacket(dAmnPacket* packet)
     case dAmnPacket::recv:
 
 
-    default: qt_noop();
+    default:
+        MNLIB_DEBUG("Unhandled packet: %s", packet->toByteArray().data());
+        qt_noop();
     }
 }
 
@@ -163,14 +165,15 @@ void dAmnSession::socketStateChange(QAbstractSocket::SocketState socketState)
 void dAmnSession::send(dAmnPacket& packet)
 {
     QByteArray data = packet.toByteArray();
-    MNLIB_DEBUG("%s", data.data());
-    this->socket.write(data);
+    //MNLIB_DEBUG("%s", data.data());
+    this->_socket.write(data);
 }
 
 void dAmnSession::login()
 {
+    MNLIB_DEBUG("Greeting server as %s", qPrintable(this->_useragent));
     dAmnPacket handshakePacket (this, "dAmnClient", DAMN_VERSION);
-    handshakePacket.getArgs().insert("agent", this->user_agent);
+    handshakePacket.args().insert("agent", this->_useragent);
 
     this->send(handshakePacket);
 
@@ -250,6 +253,7 @@ void dAmnSession::quit()
 void dAmnSession::handleHandshake(dAmnPacket* packet)
 {
     HandshakeEvent* event = new HandshakeEvent(this, packet);
+    MNLIB_DEBUG("Handshake recieved, version %s", qPrintable(event->version()));
 
     if(event->matches())
     {
@@ -265,15 +269,16 @@ void dAmnSession::handleHandshake(dAmnPacket* packet)
 
 void dAmnSession::sendCredentials()
 {
-    dAmnPacket loginPacket (this, "login", this->user_name);
-    loginPacket.getArgs().insert("pk", this->auth_token);
+    MNLIB_DEBUG("Logging in as %s", qPrintable(this->_username));
+    dAmnPacket loginPacket (this, "login", this->_username);
+    loginPacket.args().insert("pk", this->_authtoken);
 
     this->send(loginPacket);
 }
 
 void dAmnSession::setState(State state)
 {
-    this->state = state;
+    this->_state = state;
     emit stateChange(state);
 }
 
@@ -281,20 +286,22 @@ void dAmnSession::handleLogin(dAmnPacket* packet)
 {
     LoginEvent* event = new LoginEvent(this, packet);
 
-    if(event->getEvent() == LoginEvent::ok)
+    if(event->eventCode() == LoginEvent::ok)
     {
-        this->user_name = event->getUserName();
-        this->symbol    = event->getSymbol();
-        this->real_name = event->getRealName();
-        this->type_name = event->getTypeName();
-        this->gpc       = event->getGpc();
+        MNLIB_DEBUG("Login OK.");
+        this->_username = event->userName();
+        this->_symbol    = event->symbol();
+        this->_realname = event->realName();
+        this->_typename = event->typeName();
+        this->_gpc       = event->gpc();
 
         this->setState(online);
     }
     else
     {
+        MNLIB_DEBUG("Login denied: %s", qPrintable(event->eventString()));
         this->setState(offline);
-        this->socket.disconnectFromHost();
+        this->_socket.disconnectFromHost();
     }
 
     emit loggedIn(event);
@@ -304,17 +311,23 @@ void dAmnSession::handleJoin(dAmnPacket* packet)
 {
     JoinedEvent* event = new JoinedEvent(this, packet);
 
-    if(event->getEvent() == JoinedEvent::ok)
+    if(event->eventCode() == JoinedEvent::ok)
     {
-        if(this->chatrooms.contains(event->getChatroom().toIdString()))
+        MNLIB_DEBUG("Joined %s", qPrintable(event->chatroom().toIdString()));
+        if(this->_chatrooms.contains(event->chatroom().toIdString()))
         {
             MNLIB_WARN("Joined a chatroom which we already joined. Aborting.");
         }
         else
         {
-            this->chatrooms[event->getChatroom().toIdString()]
-                    = new dAmnChatroom(this, event->getChatroom());
+            this->_chatrooms[event->chatroom().toIdString()]
+                    = new dAmnChatroom(this, event->chatroom());
         }
+    }
+    else
+    {
+        MNLIB_DEBUG("Could not join %s: %s",
+                    qPrintable(event->chatroom().toIdString()),qPrintable(event->eventString()));
     }
 
     emit joined(event);
@@ -324,11 +337,17 @@ void dAmnSession::handlePart(dAmnPacket* packet)
 {
     PartedEvent* event = new PartedEvent(this, packet);
 
-    if(event->getEvent() == PartedEvent::ok)
+    if(event->eventCode() == PartedEvent::ok)
     {
-        QString id = event->getChatroom().toIdString();
-        delete this->chatrooms[id];
-        this->chatrooms.remove(id);
+        MNLIB_DEBUG("Parted from %s", qPrintable(event->chatroom().toIdString()));
+        QString id = event->chatroom().toIdString();
+        delete this->_chatrooms[id];
+        this->_chatrooms.remove(id);
+    }
+    else
+    {
+        MNLIB_DEBUG("Could not part from %s: %s",
+                    qPrintable(event->chatroom().toIdString()), qPrintable(event->eventString()));
     }
 
     emit parted(event);
@@ -336,6 +355,7 @@ void dAmnSession::handlePart(dAmnPacket* packet)
 
 void dAmnSession::handlePing()
 {
+    MNLIB_DEBUG("Ping? Pong!");
     this->pong();
 
     emit ping();
@@ -344,38 +364,42 @@ void dAmnSession::handlePing()
 void dAmnSession::handleProperty(dAmnPacket* packet)
 {
     PropertyEvent* event = new PropertyEvent(this, packet);
-    QString idstring = event->getChatroom().toIdString();
+    QString idstring = event->chatroom().toIdString();
 
-    if(!this->chatrooms.contains(idstring))
+    if(!this->_chatrooms.contains(idstring))
     {
         MNLIB_WARN("Got property %s of chatroom %s that we haven't joined.",
-                   qPrintable(event->getPropertyString()),
-                   qPrintable(event->getChatroom().toString()));
+                   qPrintable(event->propertyString()),
+                   qPrintable(event->chatroom().toString()));
         return;
     }
 
-    dAmnChatroom* chatroom = this->chatrooms[idstring];
+    dAmnChatroom* chatroom = this->_chatrooms[idstring];
 
-    switch(event->getProperty())
+    switch(event->propertyCode())
     {
     case PropertyEvent::topic:
-        chatroom->setTopic(event->getValue());
+        MNLIB_DEBUG("Topic of %s is %s", qPrintable(event->chatroom().toIdString()), qPrintable(event->value()));
+        chatroom->setTopic(event->value());
         break;
     case PropertyEvent::title:
-        chatroom->setTitle(event->getValue());
+        MNLIB_DEBUG("Title of %s is %s", qPrintable(event->chatroom().toIdString()), qPrintable(event->value()));
+        chatroom->setTitle(event->value());
         break;
     case PropertyEvent::privclasses:
-        chatroom->updatePrivclasses(event->getValue());
+        MNLIB_DEBUG("Got privclasses for %s", qPrintable(event->chatroom().toIdString()));
+        chatroom->updatePrivclasses(event->value());
         break;
     case PropertyEvent::members:
-        chatroom->processMembers(event->getValue());
+        MNLIB_DEBUG("Got members for %s", qPrintable(event->chatroom().toIdString()));
+        chatroom->processMembers(event->value());
         break;
 
     case PropertyEvent::unknown:
     default:
         MNLIB_WARN("Got unknown property %s for chatroom %s.",
-                   qPrintable(event->getPropertyString()),
-                   qPrintable(event->getChatroom().toString()));
+                   qPrintable(event->propertyString()),
+                   qPrintable(event->chatroom().toString()));
     }
 }
 

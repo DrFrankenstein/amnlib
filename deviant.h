@@ -32,9 +32,9 @@ class MNLIBSHARED_EXPORT Deviant : public QObject
 {
     Q_OBJECT
 
-    QString name, realname, type;
-    QChar symbol;
-    int usericon;
+    QString _name, _realname, _type;
+    QChar _symbol;
+    int _usericon;
 
 public:
     enum IconType
@@ -45,14 +45,14 @@ public:
     Deviant(QObject* parent, const QString& name, const QChar& symbol = QChar::Null,
             int usericon = 0, const QString& realname = QString(), const QString& type = QString());
 
-    const QString& getName() const;
-    const QString& getRealName() const;
-    const QString& getTypeName() const;
-    const QChar& getSymbol() const;
-    IconType getIconType() const;
+    const QString& name() const;
+    const QString& realName() const;
+    const QString& typeName() const;
+    const QChar& symbol() const;
+    IconType iconType() const;
 
-    QUrl getIconUrl() const;
-    QUrl getProfileUrl() const;
+    QUrl iconUrl() const;
+    QUrl profileUrl() const;
 };
 
 #endif // DEVIANT_H

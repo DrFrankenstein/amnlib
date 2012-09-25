@@ -43,15 +43,15 @@ class MNLIBSHARED_EXPORT dAmnSession : public QObject
 {
     Q_OBJECT
 
-    QTcpSocket socket;
-    dAmnPacketDevice packetdevice;
+    QTcpSocket _socket;
+    dAmnPacketDevice _packetdevice;
 
-    QString user_agent, user_name, real_name, type_name, gpc;
-    QByteArray auth_token;
-    QChar symbol;
+    QString _useragent, _username, _realname, _typename, _gpc;
+    QByteArray _authtoken;
+    QChar _symbol;
 
-    QHash<QString, dAmnChatroom*> chatrooms;
-    QHash<QString, dAmnUser*> users;
+    QHash<QString, dAmnChatroom*> _chatrooms;
+    QHash<QString, dAmnUser*> _users;
 
 public:
     enum State
@@ -60,7 +60,7 @@ public:
     };
 
 private:
-    State state;
+    State _state;
 
 private slots:
     void handlePacket(dAmnPacket* packet);
@@ -70,9 +70,9 @@ public:
     dAmnSession(const QString& username, const QByteArray &token);
     virtual ~dAmnSession();
 
-    const QString& getUserName() const;
-    State getState() const;
-    QHash<QString, dAmnUser*>& getUsers();
+    const QString& userName() const;
+    State state() const;
+    QHash<QString, dAmnUser*>& users();
     dAmnUser* addUser(const QString& name,
                       int usericon,
                       const QChar &symbol,

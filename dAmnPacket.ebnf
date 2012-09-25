@@ -1,0 +1,3 @@
+packet = cmd [' ' param] '\n' [{name '=' value '\n'}] ['\n' data] '\0'.
+
+member = {'member' ' ' name '\n' {key '=' value '\n'} '\n'}.

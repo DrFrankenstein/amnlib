@@ -21,6 +21,7 @@
 #define DAMNPACKETDEVICE_H
 
 #include <QIODevice>
+#include <QByteArray>
 #include "mnlib_global.h"
 #include "damnobject.h"
 #include "damnpacketparser.h"
@@ -31,8 +32,10 @@ class MNLIBSHARED_EXPORT dAmnPacketDevice : public dAmnObject
 {
     Q_OBJECT
 
-    QIODevice& device;
-    dAmnPacketParser parser;
+    QIODevice& _device;
+    dAmnPacketParser _parser;
+
+    QByteArray _packetBuffer;
 
 public:
     explicit dAmnPacketDevice(dAmnSession* session, QIODevice& device);

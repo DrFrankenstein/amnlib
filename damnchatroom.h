@@ -48,14 +48,14 @@ public:
     dAmnChatroom(dAmnSession* parent, const QString& roomstring);
     dAmnChatroom(dAmnSession* parent, const dAmnChatroomIdentifier& id);
 
-    Type getType() const;
-    const QString& getName() const;
-    const QString& getTitle() const;
-    const QDateTime& getTitleDate() const;
-    const QString& getTopic() const;
-    const QDateTime& getTopicDate() const;
-    QList<dAmnPrivClass*> getPrivclasses() const;
-    dAmnChatroomIdentifier getId() const;
+    Type type() const;
+    const QString& name() const;
+    const QString& title() const;
+    const QDateTime& titleDate() const;
+    const QString& topic() const;
+    const QDateTime& topicDate() const;
+    QList<dAmnPrivClass*> privclasses() const;
+    dAmnChatroomIdentifier id() const;
 
     void setTopic(const QString& newtopic);
     void setTitle(const QString& newtitle);
@@ -99,11 +99,11 @@ signals:
     void kicked(const QString& user, const QString& by, const QString& reason);
 
 private:
-    Type type;
-    QString name, title, topic;
-    QDateTime titledate, topicdate;
-    QHash<QString, dAmnPrivClass*> privclasses;
-    QHash<QString, dAmnPrivClass*> membersToPc;
+    Type _type;
+    QString _name, _title, _topic;
+    QDateTime _titledate, _topicdate;
+    QHash<QString, dAmnPrivClass*> _privclasses;
+    QHash<QString, dAmnPrivClass*> _membersToPc;
 
     void send(const dAmnPacket& packet);
 
@@ -125,7 +125,7 @@ struct MNLIBSHARED_EXPORT dAmnChatroomIdentifier // NOT a QObject.
     QString toIdString() const;
 
 private:
-    dAmnSession* session;
+    dAmnSession* _session;
 };
 
 #endif // DAMNCHATROOM_H

@@ -33,8 +33,8 @@ dAmnChatroom::dAmnChatroom(dAmnSession* parent, const QString& roomstring)
 {
     if(roomstring.startsWith('#'))
     {
-        this->type = dAmnChatroom::chat;
-        this->name = roomstring.mid(1);
+        this->_type = dAmnChatroom::chat;
+        this->_name = roomstring.mid(1);
     }
     else
     {
@@ -43,95 +43,97 @@ dAmnChatroom::dAmnChatroom(dAmnSession* parent, const QString& roomstring)
         if(parts[0] == "pchat")
         {
 
-            this->type = dAmnChatroom::pchat;
+            this->_type = dAmnChatroom::pchat;
             if(this->parent() != NULL)
             {
                 if(this->session()->isMe(parts[1]))
-                    this->name = parts[2];
+                    this->_name = parts[2];
                 else
-                    this->name = parts[1];
+                    this->_name = parts[1];
             }
             else
             {
-                this->name = QString("%1:%2").arg(parts[1], parts[2]);
+                this->_name = QString("%1:%2").arg(parts[1], parts[2]);
             }
         }
         else if(parts[0] == "chat")
         {
-            this->type = dAmnChatroom::chat;
-            this->name = parts[1];
+            this->_type = dAmnChatroom::chat;
+            this->_name = parts[1];
         }
         else
         {
-            this->type = dAmnChatroom::pchat;
-            this->name = parts[0];
+            this->_type = dAmnChatroom::pchat;
+            this->_name = parts[0];
         }
     }
+
+    this->setObjectName(this->_name);
 }
 
 dAmnChatroom::dAmnChatroom(dAmnSession* parent, const dAmnChatroomIdentifier& id)
     : dAmnObject(parent),
-      type(id.type), name(id.name)
+      _type(id.type), _name(id.name)
 {
 }
 
-dAmnChatroom::Type dAmnChatroom::getType() const
+dAmnChatroom::Type dAmnChatroom::type() const
 {
-    return this->type;
+    return this->_type;
 }
-const QString& dAmnChatroom::getName() const
+const QString& dAmnChatroom::name() const
 {
-    return this->name;
+    return this->_name;
 }
-const QString& dAmnChatroom::getTitle() const
+const QString& dAmnChatroom::title() const
 {
-    return this->title;
+    return this->_title;
 }
-const QDateTime& dAmnChatroom::getTitleDate() const
+const QDateTime& dAmnChatroom::titleDate() const
 {
-    return this->titledate;
+    return this->_titledate;
 }
-const QString& dAmnChatroom::getTopic() const
+const QString& dAmnChatroom::topic() const
 {
-    return this->topic;
+    return this->_topic;
 }
-const QDateTime& dAmnChatroom::getTopicDate() const
+const QDateTime& dAmnChatroom::topicDate() const
 {
-    return this->topicdate;
+    return this->_topicdate;
 }
-QList<dAmnPrivClass*> dAmnChatroom::getPrivclasses() const
+QList<dAmnPrivClass*> dAmnChatroom::privclasses() const
 {
-    return this->privclasses.values();
+    return this->_privclasses.values();
 }
-dAmnChatroomIdentifier dAmnChatroom::getId() const
+dAmnChatroomIdentifier dAmnChatroom::id() const
 {
-    return dAmnChatroomIdentifier(this->session(), this->type, this->name);
+    return dAmnChatroomIdentifier(this->session(), this->_type, this->_name);
 }
 
 void dAmnChatroom::setTopic(const QString& newtopic)
 {
-    this->topic = newtopic;
+    this->_topic = newtopic;
 }
 void dAmnChatroom::setTitle(const QString& newtitle)
 {
-    this->title = newtitle;
+    this->_title = newtitle;
 }
 
 void dAmnChatroom::addPrivclass(dAmnPrivClass* pc)
 {
-    this->privclasses[pc->getName()] = pc;
+    this->_privclasses[pc->name()] = pc;
 }
 void dAmnChatroom::removePrivclass(const QString& name)
 {
-    dAmnPrivClass* pc = this->privclasses[name];
+    dAmnPrivClass* pc = this->_privclasses.value(name);
     delete pc;
 
-    this->privclasses.remove(name);
+    this->_privclasses.remove(name);
 }
 
 void dAmnChatroom::updatePrivclasses(const QString& data)
 {
-    this->privclasses.clear();
+    this->_privclasses.clear();
 
     QString pclasses = data;
     QTextStream parser (&pclasses);
@@ -158,10 +160,21 @@ void dAmnChatroom::updatePrivclasses(const QString& data)
             continue;
         }
 
-        this->addPrivclass(
-                new dAmnPrivClass(this, split[1], idx)
+        QString pcname = split[1];
+        if(this->_privclasses.contains(pcname))
+        {
+            dAmnPrivClass* pc = this->_privclasses[pcname];
+            pc->setOrder(idx);
+        }
+        else
+        {
+            this->addPrivclass(
+                new dAmnPrivClass(this, pcname, idx)
                 );
+        }
     }
+
+    MNLIB_DEBUG("Update: %s has %d privclasses.", qPrintable(this->name()), this->_privclasses.count());
 }
 
 void dAmnChatroom::processMembers(const QString& data)
@@ -213,7 +226,7 @@ void dAmnChatroom::processMembers(const QString& data)
 
 void dAmnChatroom::part()
 {
-    this->session()->part(this->getId());
+    this->session()->part(this->id());
 }
 
 void dAmnChatroom::say(const QString& message)
@@ -236,7 +249,7 @@ void dAmnChatroom::npmsg(const QString& message)
 
 void dAmnChatroom::promote(const dAmnUser &user)
 {
-    this->promote(user.getName());
+    this->promote(user.name());
 }
 void dAmnChatroom::promote(const QString &username)
 {
@@ -246,7 +259,7 @@ void dAmnChatroom::promote(const QString &username)
 
 void dAmnChatroom::demote(const dAmnUser &user)
 {
-    this->demote(user.getName());
+    this->demote(user.name());
 }
 void dAmnChatroom::demote(const QString &username)
 {
@@ -256,40 +269,40 @@ void dAmnChatroom::demote(const QString &username)
 
 void dAmnChatroom::chgPrivclass(const dAmnUser &user, const QString &privclass)
 {
-    dAmnPacket packet (this->session(), "promote", user.getName(), privclass);
+    dAmnPacket packet (this->session(), "promote", user.name(), privclass);
     this->send(packet);
 }
 
 void dAmnChatroom::kick(const dAmnUser &user, const QString& reason)
 {
-    dAmnPacket packet (this->session(), "kick", this->getId().toIdString(),
+    dAmnPacket packet (this->session(), "kick", this->id().toIdString(),
                        reason);
-    packet.getArgs().insert("u", user.getName());
+    packet.args().insert("u", user.name());
     this->session()->send(packet);
 }
 
 void dAmnChatroom::ban(const dAmnUser &user)
 {
-    dAmnPacket packet (this->session(), "ban", user.getName());
+    dAmnPacket packet (this->session(), "ban", user.name());
     this->send(packet);
 }
 void dAmnChatroom::unban(const dAmnUser &user)
 {
-    dAmnPacket packet (this->session(), "unban", user.getName());
+    dAmnPacket packet (this->session(), "unban", user.name());
     this->send(packet);
 }
 
 void dAmnChatroom::getRoomProperty(const QString& property)
 {
-    dAmnPacket packet (this->session(), "get", this->getId().toIdString());
-    packet.getArgs().insert("p", property);
+    dAmnPacket packet (this->session(), "get", this->id().toIdString());
+    packet.args().insert("p", property);
 
     this->session()->send(packet);
 }
 void dAmnChatroom::setRoomProperty(const QString& property, const QString& value)
 {
-    dAmnPacket packet (this->session(), "set", this->getId().toIdString(), value);
-    packet.getArgs().insert("p", property);
+    dAmnPacket packet (this->session(), "set", this->id().toIdString(), value);
+    packet.args().insert("p", property);
 
     this->session()->send(packet);
 }
@@ -302,7 +315,7 @@ void dAmnChatroom::sendAdminCommand(const QString& command)
 
 void dAmnChatroom::send(const dAmnPacket& packet)
 {
-    dAmnPacket sendpacket (this->session(), "send", this->getId().toIdString(),
+    dAmnPacket sendpacket (this->session(), "send", this->id().toIdString(),
                            packet.toByteArray());
 
     this->session()->send(sendpacket);
@@ -317,36 +330,37 @@ void dAmnChatroom::addMember(const QString &name,
 {
     dAmnUser* user = session()->addUser(name, usericon, symbol, realname, type_name);
 
-    dAmnPrivClass* pc = this->privclasses[pcname];
+    dAmnPrivClass* pc = this->_privclasses.value(pcname);
     if (!pc)
     {
-        MNLIB_FAIL("Chatroom %s member %s belonging to unknown privclass %s",
-                   qPrintable(this->name), qPrintable(user->getName()), qPrintable(pcname));
-        return; // Handle better, like... create pc?
+        MNLIB_WARN("Chatroom %s member %s belonging to unknown privclass %s",
+                   qPrintable(this->_name), qPrintable(user->name()), qPrintable(pcname));
+        pc = new dAmnPrivClass(this, pcname, 0);
+        this->addPrivclass(pc);
     }
 
     pc->addUser(user);
-    this->membersToPc[name] = pc;
+    this->_membersToPc.insert(name, pc);
 }
 
 void dAmnChatroom::removeMember(const QString& name)
 {
-    dAmnPrivClass* pc = this->membersToPc[name];
+    dAmnPrivClass* pc = this->_membersToPc.value(name);
     if(!pc)
     {
         MNLIB_WARN("Attempt to remove unknown member %s from chatroom %s",
-                   qPrintable(name), this->name);
+                   qPrintable(name), this->_name);
         return;
     }
 
-    pc->removeUser(session()->getUsers()[name]);
+    pc->removeUser(session()->users().value(name));
     session()->cleanupUser(name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 dAmnChatroomIdentifier::dAmnChatroomIdentifier(dAmnSession* parent, const QString& roomstring)
-    : session(parent)
+    : _session(parent)
 {
     if(roomstring.startsWith('#'))
     {
@@ -360,9 +374,9 @@ dAmnChatroomIdentifier::dAmnChatroomIdentifier(dAmnSession* parent, const QStrin
         if(parts[0] == "pchat")
         {
             this->type = dAmnChatroom::pchat;
-            if(this->session != NULL)
+            if(this->_session != NULL)
             {
-                if(session->isMe(parts[1]))
+                if(_session->isMe(parts[1]))
                     this->name = parts[2];
                 else
                     this->name = parts[1];
@@ -388,7 +402,7 @@ dAmnChatroomIdentifier::dAmnChatroomIdentifier(dAmnSession* parent, const QStrin
 dAmnChatroomIdentifier::dAmnChatroomIdentifier(dAmnSession* parent, dAmnChatroom::Type type, const QString& name)
     : type(type),
     name(name),
-    session(parent)
+    _session(parent)
 {
 }
 
@@ -414,7 +428,7 @@ QString dAmnChatroomIdentifier::toIdString() const
     {
     case dAmnChatroom::chat:    return QString("chat:").append(this->name);
     case dAmnChatroom::pchat:
-        const QString& username = session->getUserName();
+        const QString& username = _session->userName();
         if(this->name < username)
         {
             return QString("pchat:%1:%2").arg(this->name, username);

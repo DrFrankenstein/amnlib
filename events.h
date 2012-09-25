@@ -38,26 +38,26 @@ class dAmnPacket;
 class MNLIBSHARED_EXPORT dAmnEvent : public dAmnObject
 {
 protected:
-    dAmnPacket* packet;
+    dAmnPacket* _packet;
 public:
     dAmnEvent(dAmnSession* parent, dAmnPacket* packet);
     virtual ~dAmnEvent();
 
-    dAmnPacket& getPacket() const;
+    dAmnPacket& packet() const;
 };
 
 class MNLIBSHARED_EXPORT HandshakeEvent : public dAmnEvent
 {
-    QString version;
+    QString _version;
 public:
     HandshakeEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getVersion() const;
+    const QString& version() const;
     bool matches() const;
 };
 
 class MNLIBSHARED_EXPORT LoginEvent : public dAmnEvent
 {
-    QString username;
+    QString _username;
 public:
     enum EventCode
     {
@@ -65,27 +65,27 @@ public:
         ok, authentication_failed, not_privileged, too_many_connections
     };
 private:
-    EventCode event;
-    QString eventstr;
-    QChar symbol;
-    QString realname, type, gpc;
+    EventCode _event;
+    QString _eventstr;
+    QChar _symbol;
+    QString _realname, _type, _gpc;
 public:
     LoginEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    EventCode getEvent() const;
-    const QString& getEventString() const;
-    const QChar& getSymbol() const;
-    const QString& getRealName() const;
-    const QString& getTypeName() const;
-    const QString& getGpc() const;
+    const QString& userName() const;
+    EventCode eventCode() const;
+    const QString& eventString() const;
+    const QChar& symbol() const;
+    const QString& realName() const;
+    const QString& typeName() const;
+    const QString& gpc() const;
 };
 
 class MNLIBSHARED_EXPORT ChatroomEvent : public dAmnEvent
 {
-    dAmnChatroomIdentifier chatroom;
+    dAmnChatroomIdentifier _chatroom;
 public:
     ChatroomEvent(dAmnSession* parent, dAmnPacket* packet);
-    const dAmnChatroomIdentifier& getChatroom() const;
+    const dAmnChatroomIdentifier& chatroom() const;
 };
 
 class MNLIBSHARED_EXPORT JoinedEvent : public ChatroomEvent
@@ -97,17 +97,16 @@ public:
         ok, not_privileged, inexistant, bad_namespace
     };
 private:
-    EventCode event;
-    QString eventstr;
+    EventCode _event;
+    QString _eventstr;
 public:
     JoinedEvent(dAmnSession* parent, dAmnPacket* packet);
-    EventCode getEvent() const;
-    const QString& getEventString() const;
+    EventCode eventCode() const;
+    const QString& eventString() const;
 };
 
 class MNLIBSHARED_EXPORT PartedEvent : public ChatroomEvent
 {
-    QString reason;
 public:
     enum EventCode
     {
@@ -115,13 +114,14 @@ public:
         ok, not_joined, bad_namespace
     };
 private:
-    EventCode event;
-    QString eventstr;
+    EventCode _event;
+    QString _eventstr;
+    QString _reason;
 public:
     PartedEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getReason() const;
-    EventCode getEvent() const;
-    const QString& getEventString() const;
+    const QString& reason() const;
+    EventCode eventCode() const;
+    const QString& eventString() const;
 };
 
 class MNLIBSHARED_EXPORT PropertyEvent : public ChatroomEvent
@@ -133,16 +133,16 @@ public:
         topic, title, privclasses, members
     };
 private:
-    PropertyCode property;
-    QString propertystr, author, value;
-    QDateTime timestamp;
+    PropertyCode _property;
+    QString _propertystr, _author, _value;
+    QDateTime _timestamp;
 public:
     PropertyEvent(dAmnSession* parent, dAmnPacket* packet);
-    PropertyCode getProperty() const;
-    const QString& getPropertyString() const;
-    const QString& getAuthor() const;
-    const QDateTime& getTimeStamp() const;
-    const QString& getValue() const;
+    PropertyCode propertyCode() const;
+    const QString& propertyString() const;
+    const QString& author() const;
+    const QDateTime& timeStamp() const;
+    const QString& value() const;
 };
 
 class MNLIBSHARED_EXPORT WhoisEvent : public dAmnEvent
@@ -154,19 +154,19 @@ public:
         QList<dAmnChatroomIdentifier> chatrooms;
     };
 private:
-    QString username, realname, type, gpc;
-    uint usericon;
-    QChar symbol;
-    QList<Connection> connections;
+    QString _username, _realname, _type, _gpc;
+    uint _usericon;
+    QChar _symbol;
+    QList<Connection> _connections;
 public:
     WhoisEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    uint getUserIcon() const;
-    const QChar& getSymbol() const;
-    const QString& getRealName() const;
-    const QString& getTypeName() const;
-    const QString& getGpc() const;
-    const QList<Connection>& getConnections() const;
+    const QString& userName() const;
+    uint userIcon() const;
+    const QChar& symbol() const;
+    const QString& realName() const;
+    const QString& typeName() const;
+    const QString& gpc() const;
+    const QList<Connection>& connections() const;
 
 private:
     bool parseData();
@@ -176,57 +176,57 @@ private:
 
 class MNLIBSHARED_EXPORT MsgEvent : public ChatroomEvent
 {
-    QString username, message;
+    QString _username, _message;
 public:
     MsgEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    const QString& getMessage() const;
+    const QString& userName() const;
+    const QString& message() const;
 };
 
 class MNLIBSHARED_EXPORT ActionEvent : public ChatroomEvent
 {
-    QString username, action;
+    QString _username, _action;
 public:
     ActionEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    const QString& getAction() const;
+    const QString& userName() const;
+    const QString& action() const;
 };
 
 class MNLIBSHARED_EXPORT JoinEvent : public ChatroomEvent
 {
-    QString username;
+    QString _username;
 public:
     JoinEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
+    const QString& userName() const;
 };
 
 class MNLIBSHARED_EXPORT PartEvent : public ChatroomEvent
 {
-    QString username, reason;
+    QString _username, _reason;
 public:
     PartEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    const QString& getReason() const;
+    const QString& userName() const;
+    const QString& reason() const;
 };
 
 class MNLIBSHARED_EXPORT PrivchgEvent : public ChatroomEvent
 {
-    QString username, admin, privclass;
+    QString _username, _admin, _privclass;
 public:
     PrivchgEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    const QString& getAdminName() const;
-    const QString& getPrivClass() const;
+    const QString& userName() const;
+    const QString& adminName() const;
+    const QString& privClass() const;
 };
 
 class MNLIBSHARED_EXPORT KickEvent : public ChatroomEvent
 {
-    QString username, kicker, reason;
+    QString _username, _kicker, _reason;
 public:
     KickEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    const QString& getKickerName() const;
-    const QString& getReason() const;
+    const QString& userName() const;
+    const QString& kickerName() const;
+    const QString& reason() const;
 };
 
 class MNLIBSHARED_EXPORT PrivUpdateEvent : public ChatroomEvent
@@ -238,15 +238,15 @@ public:
         create, update
     };
 private:
-    ActionCode action;
-    QString actionstr, username, privclass, privstring;
+    ActionCode _action;
+    QString _actionstr, _username, _privclass, _privstring;
 public:
     PrivUpdateEvent(dAmnSession* parent, dAmnPacket* packet);
-    ActionCode getAction() const;
-    const QString& getActionString() const;
-    const QString& getUserName() const;
-    const QString& getPrivClass() const;
-    const QString& getPrivString() const;
+    ActionCode action() const;
+    const QString& actionString() const;
+    const QString& userName() const;
+    const QString& privClass() const;
+    const QString& privString() const;
 };
 
 class MNLIBSHARED_EXPORT PrivMoveEvent : public ChatroomEvent
@@ -258,56 +258,56 @@ public:
         rename, move
     };
 private:
-    ActionCode action;
-    QString actionstr, username, oldname, newname;
-    int usersaffected;
+    ActionCode _action;
+    QString _actionstr, _username, _oldname, _newname;
+    int _usersaffected;
 public:
     PrivMoveEvent(dAmnSession* parent, dAmnPacket* packet);
-    ActionCode getAction() const;
-    const QString& getActionString() const;
-    const QString& getUserName() const;
-    const QString& getOldName() const;
-    const QString& getNewName() const;
-    int getUsersAffected() const;
+    ActionCode action() const;
+    const QString& actionString() const;
+    const QString& userName() const;
+    const QString& oldName() const;
+    const QString& newName() const;
+    int usersAffected() const;
 };
 
 class MNLIBSHARED_EXPORT PrivRemoveEvent : public ChatroomEvent
 {
-    QString username, privclass;
-    int usersaffected;
+    QString _username, _privclass;
+    int _usersaffected;
 public:
     PrivRemoveEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getUserName() const;
-    const QString& getPrivClass() const;
-    int getUsersAffected() const;
+    const QString& userName() const;
+    const QString& privClass() const;
+    int usersAffected() const;
 };
 
 class MNLIBSHARED_EXPORT PrivShowEvent : public ChatroomEvent
 {
-    QString privclass, privs;
+    QString _privclass, _privs;
 public:
     PrivShowEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getPrivClass() const;
-    const QString& getPrivString() const;
+    const QString& privClass() const;
+    const QString& privString() const;
 };
 
 class MNLIBSHARED_EXPORT PrivUsersEvent : public ChatroomEvent
 {
-    QHash<QString, QStringList> data;
+    QHash<QString, QStringList> _data;
 public:
     PrivUsersEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QHash<QString, QStringList>& getData() const;
-    QStringList getPrivClasses() const;
-    QStringList getUsersInPrivClass(const QString& privclass) const;
+    const QHash<QString, QStringList>& data() const;
+    QStringList privClasses() const;
+    QStringList usersInPrivClass(const QString& privclass) const;
 };
 
 class MNLIBSHARED_EXPORT KickedEvent : public ChatroomEvent
 {
-    QString kicker, reason;
+    QString _kicker, _reason;
 public:
     KickedEvent(dAmnSession* parent, dAmnPacket* packet);
-    const QString& getKicker() const;
-    const QString& getReason() const;
+    const QString& kicker() const;
+    const QString& reason() const;
 };
 
 class MNLIBSHARED_EXPORT DisconnectEvent : public dAmnEvent
@@ -319,12 +319,12 @@ public:
         ok, killed, no_login, shutdown
     };
 private:
-    EventCode event;
-    QString eventstr;
+    EventCode _event;
+    QString _eventstr;
 public:
     DisconnectEvent(dAmnSession* parent, dAmnPacket* packet);
-    EventCode getEvent() const;
-    const QString& getEventString() const;
+    EventCode eventCode() const;
+    const QString& eventString() const;
 };
 
 class MNLIBSHARED_EXPORT SendError : public ChatroomEvent
@@ -336,12 +336,12 @@ public:
         nothing_to_send, not_privileged, not_open, format_error, bad_command
     };
 private:
-    ErrorCode error;
-    QString errormsg;
+    ErrorCode _error;
+    QString _errormsg;
 public:
     SendError(dAmnSession* parent, dAmnPacket* packet);
-    ErrorCode getError() const;
-    const QString& getErrorMessage() const;
+    ErrorCode error() const;
+    const QString& errorMessage() const;
 };
 
 class MNLIBSHARED_EXPORT KickError : public ChatroomEvent
@@ -353,14 +353,14 @@ public:
         no_such_member, not_privileged
     };
 private:
-    QString username;
-    ErrorCode error;
-    QString errormsg;
+    QString _username;
+    ErrorCode _error;
+    QString _errormsg;
 public:
     KickError(dAmnSession* parent, dAmnPacket* packet);
-    ErrorCode getError() const;
-    const QString& getErrorMessage() const;
-    const QString& getUserName() const;
+    ErrorCode error() const;
+    const QString& errorMessage() const;
+    const QString& userName() const;
 };
 
 class MNLIBSHARED_EXPORT GetError : public ChatroomEvent
@@ -372,14 +372,14 @@ public:
         not_joined, unknown_property
     };
 private:
-    QString property;
-    ErrorCode error;
-    QString errormsg;
+    QString _property;
+    ErrorCode _error;
+    QString _errormsg;
 public:
     GetError(dAmnSession* parent, dAmnPacket* packet);
-    ErrorCode getError() const;
-    const QString& getErrorMessage() const;
-    const QString& getProperty() const;
+    ErrorCode error() const;
+    const QString& errorMessage() const;
+    const QString& propertyName() const;
 };
 
 class MNLIBSHARED_EXPORT SetError : public ChatroomEvent
@@ -391,14 +391,14 @@ public:
         not_joined, unknown_property, not_privileged
     };
 private:
-    QString property;
-    ErrorCode error;
-    QString errormsg;
+    QString _property;
+    ErrorCode _error;
+    QString _errormsg;
 public:
     SetError(dAmnSession* parent, dAmnPacket* packet);
-    ErrorCode getError() const;
-    const QString& getErrorMessage() const;
-    const QString& getProperty() const;
+    ErrorCode error() const;
+    const QString& errorMessage() const;
+    const QString& propertyName() const;
 };
 
 class MNLIBSHARED_EXPORT KillError : public dAmnEvent
@@ -410,14 +410,14 @@ public:
         bad_namespace, not_privileged
     };
 private:
-    QString username;
-    ErrorCode error;
-    QString errormsg;
+    QString _username;
+    ErrorCode _error;
+    QString _errormsg;
 public:
     KillError(dAmnSession* parent, dAmnPacket* packet);
-    ErrorCode getError() const;
-    const QString& getErrorMessage() const;
-    const QString& getUserName() const;
+    ErrorCode error() const;
+    const QString& errorMessage() const;
+    const QString& userName() const;
 };
 
 #endif // EVENTS_H

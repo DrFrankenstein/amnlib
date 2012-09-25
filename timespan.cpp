@@ -38,32 +38,32 @@ TimeSpan::TimeSpan(uint days, uint hours, uint minutes, uint seconds)
 {
 }
 
-uint TimeSpan::getSeconds() const
+uint TimeSpan::seconds() const
 {
     return this->_seconds % 60;
 }
-uint TimeSpan::getMinutes() const
+uint TimeSpan::minutes() const
 {
     return this->_seconds / 60 % 60;
 }
-uint TimeSpan::getHours() const
+uint TimeSpan::hours() const
 {
     return this->_seconds / 3600 % 24;
 }
-uint TimeSpan::getDays() const
+uint TimeSpan::days() const
 {
     return this->_seconds / (3600 * 24);
 }
 
-uint TimeSpan::getTotalSeconds() const
+uint TimeSpan::totalSeconds() const
 {
     return this->_seconds;
 }
-double TimeSpan::getTotalMinutes() const
+double TimeSpan::totalMinutes() const
 {
     return this->_seconds / 60;
 }
-double TimeSpan::getTotalHours() const
+double TimeSpan::totalHours() const
 {
     return this->_seconds / 3600;
 }

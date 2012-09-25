@@ -11,7 +11,7 @@ dAmnUser::dAmnUser(dAmnSession* parent, const QString& name, const QChar& symbol
 {
 }
 
-QSet<dAmnChatroom*>& dAmnUser::getChatrooms()
+QSet<dAmnChatroom*>& dAmnUser::chatrooms()
 {
-    return this->joinedChatrooms;
+    return this->_joinedChatrooms;
 }

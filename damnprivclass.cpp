@@ -31,8 +31,9 @@ dAmnPrivClass::dAmnPrivClass(dAmnChatroom* parent)
 }
 
 dAmnPrivClass::dAmnPrivClass(dAmnChatroom* parent, const QString& name, uint order)
-    : QObject(parent), name(name), order(order)
+    : QObject(parent), _name(name), _order(order)
 {
+    this->setObjectName(this->_name);
 }
 
 dAmnPrivClass::dAmnPrivClass(dAmnChatroom* parent, const QString& command)
@@ -40,7 +41,8 @@ dAmnPrivClass::dAmnPrivClass(dAmnChatroom* parent, const QString& command)
 {
     int pos = command.indexOf(' ');
     //this->setObjectName(command.mid(0, pos));
-    this->name = command.mid(0, pos);
+    this->_name = command.mid(0, pos);
+    this->setObjectName(this->_name);
 
     this->apply(command.mid(pos));
 }
@@ -76,29 +78,29 @@ void dAmnPrivClass::apply(QString commands)
 
         switch(getPriv(priv))
         {
-        case join:      this->joinpriv = value;        break;
-        case title:     this->titlepriv = value;       break;
-        case kick:      this->kickpriv = value;        break;
-        case msg:       this->msgpriv = value;         break;
-        case shownotice:this->shownoticepriv = value;  break;
-        case admin:     this->adminpriv = value;       break;
-        case images:    this->imagespriv = value;      break;
-        case smilies:   this->smiliespriv = value;     break;
-        case emoticons: this->emoticonspriv = value;   break;
-        case thumbs:    this->thumbspriv = value;      break;
-        case avatars:   this->avatarspriv = value;     break;
-        case websites:  this->websitespriv = value;    break;
-        case objects:   this->objectspriv = value;     break;
+        case join:      this->_joinpriv = value;        break;
+        case title:     this->_titlepriv = value;       break;
+        case kick:      this->_kickpriv = value;        break;
+        case msg:       this->_msgpriv = value;         break;
+        case shownotice:this->_shownoticepriv = value;  break;
+        case admin:     this->_adminpriv = value;       break;
+        case images:    this->_imagespriv = value;      break;
+        case smilies:   this->_smiliespriv = value;     break;
+        case emoticons: this->_emoticonspriv = value;   break;
+        case thumbs:    this->_thumbspriv = value;      break;
+        case avatars:   this->_avatarspriv = value;     break;
+        case websites:  this->_websitespriv = value;    break;
+        case objects:   this->_objectspriv = value;     break;
         default: qt_noop();
         }
     }
 }
 
-QHash<QString, dAmnPrivClass::KnownPrivs> dAmnPrivClass::kpriv_map;
+QHash<QString, dAmnPrivClass::KnownPrivs> dAmnPrivClass::_kpriv_map;
 
 void dAmnPrivClass::initKPriv()
 {
-#   define KPRIV(name) kpriv_map[#name] = name;
+#   define KPRIV(name) _kpriv_map[#name] = name;
     KPRIV(join) KPRIV(title) KPRIV(kick) KPRIV(msg) KPRIV(shownotice) KPRIV(admin)
     KPRIV(images) KPRIV(smilies) KPRIV(emoticons) KPRIV(thumbs) KPRIV(avatars) KPRIV(websites) KPRIV(objects)
 #   undef KPRIV
@@ -106,43 +108,48 @@ void dAmnPrivClass::initKPriv()
 
 dAmnPrivClass::KnownPrivs dAmnPrivClass::getPriv(QString privname)
 {
-    if(kpriv_map.isEmpty())
+    if(_kpriv_map.isEmpty())
         initKPriv();
 
-    return kpriv_map[privname];
+    return _kpriv_map[privname];
 }
 
-const QString& dAmnPrivClass::getName() const
+const QString& dAmnPrivClass::name() const
 {
-    return this->name;
+    return this->_name;
 }
 
-int dAmnPrivClass::getOrder() const
+uint dAmnPrivClass::order() const
 {
-    return this->order;
+    return this->_order;
 }
 
-bool dAmnPrivClass::getJoinPriv() const { return this->joinpriv; }
-bool dAmnPrivClass::getTitlePriv() const { return this->titlepriv; }
-bool dAmnPrivClass::getKickPriv() const { return this->kickpriv; }
-bool dAmnPrivClass::getMsgPriv() const { return this->msgpriv; }
-bool dAmnPrivClass::getSnowNoticePriv() const { return this->shownoticepriv; }
-bool dAmnPrivClass::getAdminPriv() const { return this->adminpriv; }
+void dAmnPrivClass::setOrder(uint order)
+{
+    this->_order = order;
+}
 
-int dAmnPrivClass::getImagesPriv() const { return this->imagespriv; }
-int dAmnPrivClass::getSmiliesPriv() const { return this->smiliespriv; }
-int dAmnPrivClass::getEmoticonsPriv() const { return this->emoticonspriv; }
-int dAmnPrivClass::getThumbsPriv() const { return this->thumbspriv; }
-int dAmnPrivClass::getAvatarsPriv() const { return this->avatarspriv; }
-int dAmnPrivClass::getWebsitesPriv() const { return this->websitespriv; }
-int dAmnPrivClass::getObjectsPriv() const { return this->objectspriv; }
+bool dAmnPrivClass::joinPriv() const { return this->_joinpriv; }
+bool dAmnPrivClass::titlePriv() const { return this->_titlepriv; }
+bool dAmnPrivClass::kickPriv() const { return this->_kickpriv; }
+bool dAmnPrivClass::msgPriv() const { return this->_msgpriv; }
+bool dAmnPrivClass::showNoticePriv() const { return this->_shownoticepriv; }
+bool dAmnPrivClass::adminPriv() const { return this->_adminpriv; }
+
+int dAmnPrivClass::imagesPriv() const { return this->_imagespriv; }
+int dAmnPrivClass::smiliesPriv() const { return this->_smiliespriv; }
+int dAmnPrivClass::emoticonsPriv() const { return this->_emoticonspriv; }
+int dAmnPrivClass::thumbsPriv() const { return this->_thumbspriv; }
+int dAmnPrivClass::avatarsPriv() const { return this->_avatarspriv; }
+int dAmnPrivClass::websitesPriv() const { return this->_websitespriv; }
+int dAmnPrivClass::objectsPriv() const { return this->_objectspriv; }
 
 void dAmnPrivClass::addUser(dAmnUser* user)
 {
-    this->users.insert(user);
+    this->_users.insert(user);
 }
 
 void dAmnPrivClass::removeUser(dAmnUser* user)
 {
-    this->users.remove(user);
+    this->_users.remove(user);
 }

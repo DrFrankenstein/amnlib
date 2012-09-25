@@ -33,14 +33,14 @@ class MNLIBSHARED_EXPORT dAmnPrivClass : public QObject
 {
     Q_OBJECT
 
-    QString name;
+    QString _name;
 
-    uint order;
+    uint _order;
 
-    bool joinpriv, titlepriv, topicpriv, kickpriv, msgpriv, shownoticepriv, adminpriv;
-    int imagespriv, smiliespriv, emoticonspriv, thumbspriv, avatarspriv, websitespriv, objectspriv;
+    bool _joinpriv, _titlepriv, _topicpriv, _kickpriv, _msgpriv, _shownoticepriv, _adminpriv;
+    int _imagespriv, _smiliespriv, _emoticonspriv, _thumbspriv, _avatarspriv, _websitespriv, _objectspriv;
 
-    QSet<dAmnUser*> users;
+    QSet<dAmnUser*> _users;
 
 public:
     enum KnownPrivs
@@ -51,7 +51,7 @@ public:
     };
 
 private:
-    static QHash<QString, KnownPrivs> kpriv_map;
+    static QHash<QString, KnownPrivs> _kpriv_map;
     static void initKPriv();
     static KnownPrivs getPriv(QString privname);
 
@@ -62,24 +62,25 @@ public:
 
     void apply(QString command);
 
-    const QString& getName() const;
-    int getOrder() const;
+    const QString& name() const;
+    uint order() const;
+    void setOrder(uint order);
 
-    bool getJoinPriv() const;
-    bool getTitlePriv() const;
-    bool getTopicPriv() const;
-    bool getKickPriv() const;
-    bool getMsgPriv() const;
-    bool getSnowNoticePriv() const;
-    bool getAdminPriv() const;
+    bool joinPriv() const;
+    bool titlePriv() const;
+    bool topicPriv() const;
+    bool kickPriv() const;
+    bool msgPriv() const;
+    bool showNoticePriv() const;
+    bool adminPriv() const;
 
-    int getImagesPriv() const;
-    int getSmiliesPriv() const;
-    int getEmoticonsPriv() const;
-    int getThumbsPriv() const;
-    int getAvatarsPriv() const;
-    int getWebsitesPriv() const;
-    int getObjectsPriv() const;
+    int imagesPriv() const;
+    int smiliesPriv() const;
+    int emoticonsPriv() const;
+    int thumbsPriv() const;
+    int avatarsPriv() const;
+    int websitesPriv() const;
+    int objectsPriv() const;
 
     void addUser(dAmnUser* user);
     void removeUser(dAmnUser* user);

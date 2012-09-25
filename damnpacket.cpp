@@ -29,13 +29,13 @@
 
 dAmnPacket::dAmnPacket(dAmnSession* parent)
         :dAmnObject(parent),
-         subpacket(NULL)
+         _subpacket(NULL)
 {
 }
 
 dAmnPacket::dAmnPacket(dAmnSession* parent, const QString& cmd, const QString& param, const QString& data)
     : dAmnObject(parent),
-        cmd(cmd), param(param), data(data), args(QHash<QString, QString>()), subpacket(NULL)
+        _cmd(cmd), _param(param), _data(data), _args(QHash<QString, QString>()), _subpacket(NULL)
 {
     this->setKCmd();
 }
@@ -43,22 +43,22 @@ dAmnPacket::dAmnPacket(dAmnSession* parent, const QString& cmd, const QString& p
 dAmnPacket::dAmnPacket(const dAmnPacket& packet)
     : dAmnObject(packet.session())
 {
-    if(packet.subpacket != NULL)
+    if(packet._subpacket != NULL)
     {
-        this->subpacket = new dAmnPacket(*packet.subpacket);
+        this->_subpacket = new dAmnPacket(*packet._subpacket);
     }
 }
 
 dAmnPacket::~dAmnPacket()
 {
-    delete subpacket;
+    delete _subpacket;
 }
 
-QHash<QString, dAmnPacket::KnownCmd> dAmnPacket::kcmd_map;
+QHash<QString, dAmnPacket::KnownCmd> dAmnPacket::_kcmd_map;
 
 void dAmnPacket::initKCmd()
 {
-#   define KCMD(name) kcmd_map[#name] = name;
+#   define KCMD(name) _kcmd_map[#name] = name;
     KCMD(dAmnClient) KCMD(dAmnServer) KCMD(login)
     KCMD(join) KCMD(part)
     KCMD(ping) KCMD(pong)
@@ -78,10 +78,10 @@ void dAmnPacket::initKCmd()
 
 void dAmnPacket::setKCmd()
 {
-    if(this->kcmd_map.isEmpty())
+    if(this->_kcmd_map.isEmpty())
         initKCmd();
 
-    this->kcmd = kcmd_map[this->cmd];
+    this->_kcmd = _kcmd_map[this->_cmd];
 }
 
 QByteArray dAmnPacket::toByteArray() const
@@ -89,23 +89,23 @@ QByteArray dAmnPacket::toByteArray() const
     QString rawpacket;
     QTextStream builder (&rawpacket, QIODevice::WriteOnly);
 
-    builder << this->cmd;
-    if(!this->param.isEmpty())
+    builder << this->_cmd;
+    if(!this->_param.isEmpty())
     {
-        builder << ' ' << this->param;
+        builder << ' ' << this->_param;
     }
 
     builder << '\n';
 
-    QList<QString> keys = this->args.keys();
+    QList<QString> keys = this->_args.keys();
     foreach(QString argn, keys)
     {
-        builder << argn << '=' << this->args[argn] << '\n';
+        builder << argn << '=' << this->_args[argn] << '\n';
     }
 
-    if(!this->data.isEmpty())
+    if(!this->_data.isEmpty())
     {
-        builder << this->data;
+        builder << this->_data;
     }
 
     builder << '\0';
@@ -113,43 +113,53 @@ QByteArray dAmnPacket::toByteArray() const
     return rawpacket.toUtf8();
 }
 
-const QHash<QString, QString>& dAmnPacket::getArgs() const
+const QHash<QString, QString>& dAmnPacket::args() const
 {
-    return this->args;
+    return this->_args;
 }
 
-QHash<QString, QString>& dAmnPacket::getArgs()
+QHash<QString, QString>& dAmnPacket::args()
 {
-    return this->args;
+    return this->_args;
+}
+
+QString dAmnPacket::arg(const QString& name) const
+{
+    return this->_args.value(name);
+}
+
+void dAmnPacket::setArg(const QString& name, const QString& value)
+{
+    this->_args.insert(name, value);
 }
 
 void dAmnPacket::setArgs(const QHash<QString, QString> &args)
 {
-    this->args = args;
+    this->_args = args;
 }
 
 dAmnPacket::KnownCmd dAmnPacket::command() const
 {
-    return this->kcmd;
+    return this->_kcmd;
 }
 
-const QString& dAmnPacket::getParam() const
+const QString& dAmnPacket::param() const
 {
-    return this->param;
+    return this->_param;
 }
 
-const QString& dAmnPacket::getData() const
+const QString& dAmnPacket::data() const
 {
-    return this->data;
+    return this->_data;
 }
 
-dAmnPacket& dAmnPacket::getSubPacket()
+dAmnPacket& dAmnPacket::subPacket()
 {
-    if(!this->subpacket)
+    if(!this->_subpacket)
     {
         dAmnPacketParser parser (this->session());
-        this->subpacket = parser.parsePacket(&this->data.toUtf8());
+        this->_subpacket = parser.parsePacket(&this->_data.toUtf8());
     }
 
-    return *this->subpacket;
+    return *this->_subpacket;
 }

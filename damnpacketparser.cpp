@@ -129,7 +129,7 @@ dAmnPacket* dAmnPacketParser::parsePacket(QByteArray* raw)
             break;
 
         case Data:
-            data = stream.readAll();
+            data = c + stream.readAll();
         }
     }
 

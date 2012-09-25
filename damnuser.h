@@ -33,13 +33,13 @@ class dAmnChatroom;
 
 class MNLIBSHARED_EXPORT dAmnUser : public Deviant
 {
-    QSet<dAmnChatroom*> joinedChatrooms;
+    QSet<dAmnChatroom*> _joinedChatrooms;
 
 public:
     dAmnUser(dAmnSession* parent, const QString& name, const QChar& symbol = QChar::Null,
              int usericon = 0, const QString& realname = QString(), const QString& type = QString());
 
-    QSet<dAmnChatroom*>& getChatrooms();
+    QSet<dAmnChatroom*>& chatrooms();
 
     void whois();
 };
