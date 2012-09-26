@@ -41,7 +41,7 @@ public:
     explicit dAmnPacketDevice(dAmnSession* session, QIODevice& device);
 
 signals:
-    void packetReady(dAmnPacket* packet);
+    void packetReady(dAmnPacket& packet);
 
 private slots:
     void readPacket();

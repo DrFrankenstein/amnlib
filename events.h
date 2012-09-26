@@ -38,9 +38,9 @@ class dAmnPacket;
 class MNLIBSHARED_EXPORT dAmnEvent : public dAmnObject
 {
 protected:
-    dAmnPacket* _packet;
+    dAmnPacket& _packet;
 public:
-    dAmnEvent(dAmnSession* parent, dAmnPacket* packet);
+    dAmnEvent(dAmnSession* parent, dAmnPacket& packet);
     virtual ~dAmnEvent();
 
     dAmnPacket& packet() const;
@@ -50,7 +50,7 @@ class MNLIBSHARED_EXPORT HandshakeEvent : public dAmnEvent
 {
     QString _version;
 public:
-    HandshakeEvent(dAmnSession* parent, dAmnPacket* packet);
+    HandshakeEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& version() const;
     bool matches() const;
 };
@@ -70,7 +70,7 @@ private:
     QChar _symbol;
     QString _realname, _type, _gpc;
 public:
-    LoginEvent(dAmnSession* parent, dAmnPacket* packet);
+    LoginEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     EventCode eventCode() const;
     const QString& eventString() const;
@@ -84,7 +84,7 @@ class MNLIBSHARED_EXPORT ChatroomEvent : public dAmnEvent
 {
     dAmnChatroomIdentifier _chatroom;
 public:
-    ChatroomEvent(dAmnSession* parent, dAmnPacket* packet);
+    ChatroomEvent(dAmnSession* parent, dAmnPacket& packet);
     const dAmnChatroomIdentifier& chatroom() const;
 };
 
@@ -100,7 +100,7 @@ private:
     EventCode _event;
     QString _eventstr;
 public:
-    JoinedEvent(dAmnSession* parent, dAmnPacket* packet);
+    JoinedEvent(dAmnSession* parent, dAmnPacket& packet);
     EventCode eventCode() const;
     const QString& eventString() const;
 };
@@ -118,7 +118,7 @@ private:
     QString _eventstr;
     QString _reason;
 public:
-    PartedEvent(dAmnSession* parent, dAmnPacket* packet);
+    PartedEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& reason() const;
     EventCode eventCode() const;
     const QString& eventString() const;
@@ -137,7 +137,7 @@ private:
     QString _propertystr, _author, _value;
     QDateTime _timestamp;
 public:
-    PropertyEvent(dAmnSession* parent, dAmnPacket* packet);
+    PropertyEvent(dAmnSession* parent, dAmnPacket& packet);
     PropertyCode propertyCode() const;
     const QString& propertyString() const;
     const QString& author() const;
@@ -159,7 +159,7 @@ private:
     QChar _symbol;
     QList<Connection> _connections;
 public:
-    WhoisEvent(dAmnSession* parent, dAmnPacket* packet);
+    WhoisEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     uint userIcon() const;
     const QChar& symbol() const;
@@ -178,7 +178,7 @@ class MNLIBSHARED_EXPORT MsgEvent : public ChatroomEvent
 {
     QString _username, _message;
 public:
-    MsgEvent(dAmnSession* parent, dAmnPacket* packet);
+    MsgEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     const QString& message() const;
 };
@@ -187,7 +187,7 @@ class MNLIBSHARED_EXPORT ActionEvent : public ChatroomEvent
 {
     QString _username, _action;
 public:
-    ActionEvent(dAmnSession* parent, dAmnPacket* packet);
+    ActionEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     const QString& action() const;
 };
@@ -196,7 +196,7 @@ class MNLIBSHARED_EXPORT JoinEvent : public ChatroomEvent
 {
     QString _username;
 public:
-    JoinEvent(dAmnSession* parent, dAmnPacket* packet);
+    JoinEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
 };
 
@@ -204,7 +204,7 @@ class MNLIBSHARED_EXPORT PartEvent : public ChatroomEvent
 {
     QString _username, _reason;
 public:
-    PartEvent(dAmnSession* parent, dAmnPacket* packet);
+    PartEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     const QString& reason() const;
 };
@@ -213,7 +213,7 @@ class MNLIBSHARED_EXPORT PrivchgEvent : public ChatroomEvent
 {
     QString _username, _admin, _privclass;
 public:
-    PrivchgEvent(dAmnSession* parent, dAmnPacket* packet);
+    PrivchgEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     const QString& adminName() const;
     const QString& privClass() const;
@@ -223,7 +223,7 @@ class MNLIBSHARED_EXPORT KickEvent : public ChatroomEvent
 {
     QString _username, _kicker, _reason;
 public:
-    KickEvent(dAmnSession* parent, dAmnPacket* packet);
+    KickEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     const QString& kickerName() const;
     const QString& reason() const;
@@ -241,7 +241,7 @@ private:
     ActionCode _action;
     QString _actionstr, _username, _privclass, _privstring;
 public:
-    PrivUpdateEvent(dAmnSession* parent, dAmnPacket* packet);
+    PrivUpdateEvent(dAmnSession* parent, dAmnPacket& packet);
     ActionCode action() const;
     const QString& actionString() const;
     const QString& userName() const;
@@ -262,7 +262,7 @@ private:
     QString _actionstr, _username, _oldname, _newname;
     int _usersaffected;
 public:
-    PrivMoveEvent(dAmnSession* parent, dAmnPacket* packet);
+    PrivMoveEvent(dAmnSession* parent, dAmnPacket& packet);
     ActionCode action() const;
     const QString& actionString() const;
     const QString& userName() const;
@@ -276,7 +276,7 @@ class MNLIBSHARED_EXPORT PrivRemoveEvent : public ChatroomEvent
     QString _username, _privclass;
     int _usersaffected;
 public:
-    PrivRemoveEvent(dAmnSession* parent, dAmnPacket* packet);
+    PrivRemoveEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     const QString& privClass() const;
     int usersAffected() const;
@@ -286,7 +286,7 @@ class MNLIBSHARED_EXPORT PrivShowEvent : public ChatroomEvent
 {
     QString _privclass, _privs;
 public:
-    PrivShowEvent(dAmnSession* parent, dAmnPacket* packet);
+    PrivShowEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& privClass() const;
     const QString& privString() const;
 };
@@ -295,7 +295,7 @@ class MNLIBSHARED_EXPORT PrivUsersEvent : public ChatroomEvent
 {
     QHash<QString, QStringList> _data;
 public:
-    PrivUsersEvent(dAmnSession* parent, dAmnPacket* packet);
+    PrivUsersEvent(dAmnSession* parent, dAmnPacket& packet);
     const QHash<QString, QStringList>& data() const;
     QStringList privClasses() const;
     QStringList usersInPrivClass(const QString& privclass) const;
@@ -305,7 +305,7 @@ class MNLIBSHARED_EXPORT KickedEvent : public ChatroomEvent
 {
     QString _kicker, _reason;
 public:
-    KickedEvent(dAmnSession* parent, dAmnPacket* packet);
+    KickedEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& kicker() const;
     const QString& reason() const;
 };
@@ -322,7 +322,7 @@ private:
     EventCode _event;
     QString _eventstr;
 public:
-    DisconnectEvent(dAmnSession* parent, dAmnPacket* packet);
+    DisconnectEvent(dAmnSession* parent, dAmnPacket& packet);
     EventCode eventCode() const;
     const QString& eventString() const;
 };
@@ -339,7 +339,7 @@ private:
     ErrorCode _error;
     QString _errormsg;
 public:
-    SendError(dAmnSession* parent, dAmnPacket* packet);
+    SendError(dAmnSession* parent, dAmnPacket& packet);
     ErrorCode error() const;
     const QString& errorMessage() const;
 };
@@ -357,7 +357,7 @@ private:
     ErrorCode _error;
     QString _errormsg;
 public:
-    KickError(dAmnSession* parent, dAmnPacket* packet);
+    KickError(dAmnSession* parent, dAmnPacket& packet);
     ErrorCode error() const;
     const QString& errorMessage() const;
     const QString& userName() const;
@@ -376,7 +376,7 @@ private:
     ErrorCode _error;
     QString _errormsg;
 public:
-    GetError(dAmnSession* parent, dAmnPacket* packet);
+    GetError(dAmnSession* parent, dAmnPacket& packet);
     ErrorCode error() const;
     const QString& errorMessage() const;
     const QString& propertyName() const;
@@ -395,7 +395,7 @@ private:
     ErrorCode _error;
     QString _errormsg;
 public:
-    SetError(dAmnSession* parent, dAmnPacket* packet);
+    SetError(dAmnSession* parent, dAmnPacket& packet);
     ErrorCode error() const;
     const QString& errorMessage() const;
     const QString& propertyName() const;
@@ -414,7 +414,7 @@ private:
     ErrorCode _error;
     QString _errormsg;
 public:
-    KillError(dAmnSession* parent, dAmnPacket* packet);
+    KillError(dAmnSession* parent, dAmnPacket& packet);
     ErrorCode error() const;
     const QString& errorMessage() const;
     const QString& userName() const;

@@ -178,6 +178,8 @@ Makefile.Release
 
 *.sln
 *.vcproj
+*.vcxproj
+*.vcxproj.filters
 *.rc
 
 #############

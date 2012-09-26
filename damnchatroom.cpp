@@ -75,6 +75,7 @@ dAmnChatroom::dAmnChatroom(dAmnSession* parent, const dAmnChatroomIdentifier& id
     : dAmnObject(parent),
       _type(id.type), _name(id.name)
 {
+    this->setObjectName(this->_name);
 }
 
 dAmnChatroom::Type dAmnChatroom::type() const

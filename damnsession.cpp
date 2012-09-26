@@ -34,8 +34,8 @@ dAmnSession::dAmnSession(const QString& username, const QByteArray& token)
             this, SIGNAL(socketError(QAbstractSocket::SocketError)));
     connect(&this->_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
             this, SLOT(socketStateChange(QAbstractSocket::SocketState)));
-    connect(&this->_packetdevice, SIGNAL(packetReady(dAmnPacket*)),
-            this, SLOT(handlePacket(dAmnPacket*)));
+    connect(&this->_packetdevice, SIGNAL(packetReady(dAmnPacket&)),
+            this, SLOT(handlePacket(dAmnPacket&)));
 }
 
 dAmnSession::~dAmnSession()
@@ -113,9 +113,9 @@ void dAmnSession::connectToHost()
     }
 }
 
-void dAmnSession::handlePacket(dAmnPacket* packet)
+void dAmnSession::handlePacket(dAmnPacket& packet)
 {
-    switch(packet->command())
+    switch(packet.command())
     {
     case dAmnPacket::dAmnServer:
         this->handleHandshake(packet);
@@ -141,7 +141,7 @@ void dAmnSession::handlePacket(dAmnPacket* packet)
 
 
     default:
-        MNLIB_DEBUG("Unhandled packet: %s", packet->toByteArray().data());
+        MNLIB_DEBUG("Unhandled packet: %s", packet.toByteArray().data());
         qt_noop();
     }
 }
@@ -250,12 +250,12 @@ void dAmnSession::quit()
     this->send(packet);
 }
 
-void dAmnSession::handleHandshake(dAmnPacket* packet)
+void dAmnSession::handleHandshake(dAmnPacket& packet)
 {
-    HandshakeEvent* event = new HandshakeEvent(this, packet);
-    MNLIB_DEBUG("Handshake recieved, version %s", qPrintable(event->version()));
+    HandshakeEvent event (this, packet);
+    MNLIB_DEBUG("Handshake recieved, version %s", qPrintable(event.version()));
 
-    if(event->matches())
+    if(event.matches())
     {
         this->sendCredentials();
     }
@@ -282,24 +282,24 @@ void dAmnSession::setState(State state)
     emit stateChange(state);
 }
 
-void dAmnSession::handleLogin(dAmnPacket* packet)
+void dAmnSession::handleLogin(dAmnPacket& packet)
 {
-    LoginEvent* event = new LoginEvent(this, packet);
+    LoginEvent event (this, packet);
 
-    if(event->eventCode() == LoginEvent::ok)
+    if(event.eventCode() == LoginEvent::ok)
     {
         MNLIB_DEBUG("Login OK.");
-        this->_username = event->userName();
-        this->_symbol    = event->symbol();
-        this->_realname = event->realName();
-        this->_typename = event->typeName();
-        this->_gpc       = event->gpc();
+        this->_username = event.userName();
+        this->_symbol    = event.symbol();
+        this->_realname = event.realName();
+        this->_typename = event.typeName();
+        this->_gpc       = event.gpc();
 
         this->setState(online);
     }
     else
     {
-        MNLIB_DEBUG("Login denied: %s", qPrintable(event->eventString()));
+        MNLIB_DEBUG("Login denied: %s", qPrintable(event.eventString()));
         this->setState(offline);
         this->_socket.disconnectFromHost();
     }
@@ -307,47 +307,47 @@ void dAmnSession::handleLogin(dAmnPacket* packet)
     emit loggedIn(event);
 }
 
-void dAmnSession::handleJoin(dAmnPacket* packet)
+void dAmnSession::handleJoin(dAmnPacket& packet)
 {
-    JoinedEvent* event = new JoinedEvent(this, packet);
+    JoinedEvent event (this, packet);
 
-    if(event->eventCode() == JoinedEvent::ok)
+    if(event.eventCode() == JoinedEvent::ok)
     {
-        MNLIB_DEBUG("Joined %s", qPrintable(event->chatroom().toIdString()));
-        if(this->_chatrooms.contains(event->chatroom().toIdString()))
+        MNLIB_DEBUG("Joined %s", qPrintable(event.chatroom().toIdString()));
+        if(this->_chatrooms.contains(event.chatroom().toIdString()))
         {
             MNLIB_WARN("Joined a chatroom which we already joined. Aborting.");
         }
         else
         {
-            this->_chatrooms[event->chatroom().toIdString()]
-                    = new dAmnChatroom(this, event->chatroom());
+            this->_chatrooms[event.chatroom().toIdString()]
+                    = new dAmnChatroom(this, event.chatroom());
         }
     }
     else
     {
         MNLIB_DEBUG("Could not join %s: %s",
-                    qPrintable(event->chatroom().toIdString()),qPrintable(event->eventString()));
+                    qPrintable(event.chatroom().toIdString()),qPrintable(event.eventString()));
     }
 
     emit joined(event);
 }
 
-void dAmnSession::handlePart(dAmnPacket* packet)
+void dAmnSession::handlePart(dAmnPacket& packet)
 {
-    PartedEvent* event = new PartedEvent(this, packet);
+    PartedEvent event (this, packet);
 
-    if(event->eventCode() == PartedEvent::ok)
+    if(event.eventCode() == PartedEvent::ok)
     {
-        MNLIB_DEBUG("Parted from %s", qPrintable(event->chatroom().toIdString()));
-        QString id = event->chatroom().toIdString();
+        MNLIB_DEBUG("Parted from %s", qPrintable(event.chatroom().toIdString()));
+        QString id = event.chatroom().toIdString();
         delete this->_chatrooms[id];
         this->_chatrooms.remove(id);
     }
     else
     {
         MNLIB_DEBUG("Could not part from %s: %s",
-                    qPrintable(event->chatroom().toIdString()), qPrintable(event->eventString()));
+                    qPrintable(event.chatroom().toIdString()), qPrintable(event.eventString()));
     }
 
     emit parted(event);
@@ -361,51 +361,51 @@ void dAmnSession::handlePing()
     emit ping();
 }
 
-void dAmnSession::handleProperty(dAmnPacket* packet)
+void dAmnSession::handleProperty(dAmnPacket& packet)
 {
-    PropertyEvent* event = new PropertyEvent(this, packet);
-    QString idstring = event->chatroom().toIdString();
+    PropertyEvent event (this, packet);
+    QString idstring = event.chatroom().toIdString();
 
     if(!this->_chatrooms.contains(idstring))
     {
         MNLIB_WARN("Got property %s of chatroom %s that we haven't joined.",
-                   qPrintable(event->propertyString()),
-                   qPrintable(event->chatroom().toString()));
+                   qPrintable(event.propertyString()),
+                   qPrintable(event.chatroom().toString()));
         return;
     }
 
     dAmnChatroom* chatroom = this->_chatrooms[idstring];
 
-    switch(event->propertyCode())
+    switch(event.propertyCode())
     {
     case PropertyEvent::topic:
-        MNLIB_DEBUG("Topic of %s is %s", qPrintable(event->chatroom().toIdString()), qPrintable(event->value()));
-        chatroom->setTopic(event->value());
+        MNLIB_DEBUG("Topic of %s is %s", qPrintable(event.chatroom().toIdString()), qPrintable(event.value()));
+        chatroom->setTopic(event.value());
         break;
     case PropertyEvent::title:
-        MNLIB_DEBUG("Title of %s is %s", qPrintable(event->chatroom().toIdString()), qPrintable(event->value()));
-        chatroom->setTitle(event->value());
+        MNLIB_DEBUG("Title of %s is %s", qPrintable(event.chatroom().toIdString()), qPrintable(event.value()));
+        chatroom->setTitle(event.value());
         break;
     case PropertyEvent::privclasses:
-        MNLIB_DEBUG("Got privclasses for %s", qPrintable(event->chatroom().toIdString()));
-        chatroom->updatePrivclasses(event->value());
+        MNLIB_DEBUG("Got privclasses for %s", qPrintable(event.chatroom().toIdString()));
+        chatroom->updatePrivclasses(event.value());
         break;
     case PropertyEvent::members:
-        MNLIB_DEBUG("Got members for %s", qPrintable(event->chatroom().toIdString()));
-        chatroom->processMembers(event->value());
+        MNLIB_DEBUG("Got members for %s", qPrintable(event.chatroom().toIdString()));
+        chatroom->processMembers(event.value());
         break;
 
     case PropertyEvent::unknown:
     default:
         MNLIB_WARN("Got unknown property %s for chatroom %s.",
-                   qPrintable(event->propertyString()),
-                   qPrintable(event->chatroom().toString()));
+                   qPrintable(event.propertyString()),
+                   qPrintable(event.chatroom().toString()));
     }
 }
 
-void dAmnSession::handleWhois(dAmnPacket* packet)
+void dAmnSession::handleWhois(dAmnPacket& packet)
 {
-    WhoisEvent* event = new WhoisEvent(this, packet);
+    WhoisEvent event (this, packet);
 
     emit gotWhois(event);
 }

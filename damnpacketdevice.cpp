@@ -21,6 +21,7 @@
 
 #include <QByteArray>
 #include "damnobject.h"
+#include "damnpacket.h"
 
 class dAmnSession;
 
@@ -47,8 +48,9 @@ void dAmnPacketDevice::readPacket()
             dAmnPacket* packet = this->_parser.parsePacket(&this->_packetBuffer);
 
             if(packet)
-                emit packetReady(packet);
+                emit packetReady(*packet);
 
+            delete packet;
             this->_packetBuffer.clear();
         }
     }
