@@ -50,6 +50,31 @@ const QChar& Deviant::symbol() const
     return this->_symbol;
 }
 
+void Deviant::setName(const QString& name)
+{
+    this->_name = name;
+}
+
+void Deviant::setRealname(const QString& realname)
+{
+    this->_realname = realname;
+}
+
+void Deviant::setTypeName(const QString& type)
+{
+    this->_type = type;
+}
+
+void Deviant::setSymbol(const QChar& symbol)
+{
+    this->_symbol = symbol;
+}
+
+void Deviant::setUsericon(int usericon)
+{
+    this->_usericon = usericon;
+}
+
 Deviant::IconType Deviant::iconType() const
 {
     switch(this->_usericon & 3)

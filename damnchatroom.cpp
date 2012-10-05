@@ -23,10 +23,12 @@
 #include "damnprivclass.h"
 #include "damnpacket.h"
 #include "damnuser.h"
+#include "events.h"
 
 #include <QString>
 #include <QStringList>
 #include <QHash>
+#include <QRegExp>
 
 dAmnChatroom::dAmnChatroom(dAmnSession* parent, const QString& roomstring)
     : dAmnObject(parent)
@@ -182,9 +184,7 @@ void dAmnChatroom::processMembers(const QString& data)
 {
     QString members = data;
     QTextStream reader (&members);
-    QString name, pc, realname, type_name;
-    int usericon = 0;
-    QChar symbol = 0;
+    QString name, line, pc, props;
 
     while(!reader.atEnd())
     {
@@ -194,33 +194,17 @@ void dAmnChatroom::processMembers(const QString& data)
         {
             if(!name.isEmpty())
             {
-                this->addMember(name, pc, usericon, symbol, realname, type_name);
+                this->addMember(name, pc, props);
             }
 
-            pc = realname = type_name = QString();
-            symbol = usericon = 0;
+            pc = props = QString();
 
-            name = line.mid(7); // indexOf(' ')
+            name = line.mid(7); // indexOf(' ') + 1
         }
         else if(!line.isEmpty())
         {
-            QPair<QString,QString> pair = dAmnPacketParser::splitPair(line);
-            if(pair.first == "pc") pc = pair.second;
-            else if(pair.first == "usericon")
-            {
-                bool ok;
-                usericon = pair.second.toInt(&ok);
-                if(!ok) MNLIB_WARN("Invalid usericon value for user %s: %s",
-                                   qPrintable(name), qPrintable(pair.second));
-            }
-            else if(pair.first == "symbol") symbol = pair.second.at(0);
-            else if(pair.first == "realname") realname = pair.second;
-            else if(pair.first == "typename") type_name = pair.second;
-            else
-            {
-                MNLIB_WARN("Unknown user property %s = %s for %s",
-                           qPrintable(pair.first), qPrintable(pair.second), qPrintable(name));
-            }
+            if(line.startsWith("pc=")) pc = line.mid(3); // indexOf('=') + 1
+            else props.append(line + "\n");
         }
     }
 }
@@ -322,17 +306,35 @@ void dAmnChatroom::send(const dAmnPacket& packet)
     this->session()->send(sendpacket);
 }
 
-void dAmnChatroom::addMember(const QString &name,
-                             const QString &pcname,
+void dAmnChatroom::addMember(const QString& name,
+                             const QString& pcname,
                              int usericon,
-                             const QChar &symbol,
-                             const QString &realname,
-                             const QString &type_name)
+                             const QChar& symbol,
+                             const QString& realname,
+                             const QString& type_name,
+                             const QString& gpc)
 {
-    dAmnUser* user = session()->addUser(name, usericon, symbol, realname, type_name);
+    dAmnUser* user = session()->addUser(name, usericon, symbol, realname, type_name, gpc);
 
     dAmnPrivClass* pc = this->_privclasses.value(pcname);
     if (!pc)
+    {
+        MNLIB_WARN("Chatroom %s member %s belonging to unknown privclass %s",
+                   qPrintable(this->_name), qPrintable(user->name()), qPrintable(pcname));
+        pc = new dAmnPrivClass(this, pcname, 0);
+        this->addPrivclass(pc);
+    }
+
+    pc->addUser(user);
+    this->_membersToPc.insert(name, pc);
+}
+
+void dAmnChatroom::addMember(const QString& name, const QString& pcname, const QString& props)
+{
+    dAmnUser* user = session()->addUser(name, props);
+
+    dAmnPrivClass* pc = this->_privclasses.value(pcname);
+    if(!pc)
     {
         MNLIB_WARN("Chatroom %s member %s belonging to unknown privclass %s",
                    qPrintable(this->_name), qPrintable(user->name()), qPrintable(pcname));
@@ -356,6 +358,39 @@ void dAmnChatroom::removeMember(const QString& name)
 
     pc->removeUser(session()->users().value(name));
     session()->cleanupUser(name);
+}
+
+void dAmnChatroom::notifyMessage(const MsgEvent& event)
+{
+    emit message(event.userName(), event.message());
+}
+
+void dAmnChatroom::notifyAction(const ActionEvent& event)
+{
+    emit action(event.userName(), event.action());
+}
+
+void dAmnChatroom::notifyJoin(const JoinEvent& event)
+{
+    QRegExp rx ("pc=(\\w+)");
+    (void) rx.indexIn(event.properties());
+    QString pcname = rx.cap(1);
+
+    this->addMember(event.userName(), pcname, event.properties());
+
+    emit joined(event.userName());
+}
+
+void dAmnChatroom::notifyPart(const PartEvent& event)
+{
+    this->removeMember(event.userName());
+    emit parted(event.userName(), event.reason());
+}
+
+void dAmnChatroom::notifyKick(const KickEvent& event)
+{
+    this->removeMember(event.userName());
+    emit kicked(event.userName(), event.kickerName(), event.reason());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

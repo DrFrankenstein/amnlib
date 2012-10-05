@@ -22,6 +22,7 @@
 
 #include "mnlib_global.h"
 #include "damnobject.h"
+#include "evtfwd.h"
 
 #include <QString>
 #include <QDateTime>
@@ -39,6 +40,8 @@ class dAmnPacket;
 
 class MNLIBSHARED_EXPORT dAmnChatroom : public dAmnObject
 {
+    Q_OBJECT
+
 public:
     enum Type
     {
@@ -88,6 +91,12 @@ public:
 
     void sendAdminCommand(const QString& command);
 
+    void notifyMessage(const MsgEvent& event);
+    void notifyAction(const ActionEvent& event);
+    void notifyJoin(const JoinEvent& event);
+    void notifyPart(const PartEvent& event);
+    void notifyKick(const KickEvent& event);
+
 signals:
     void message(const QString& user, const QString& content);
     void action(const QString& user, const QString& content);
@@ -107,7 +116,8 @@ private:
 
     void send(const dAmnPacket& packet);
 
-    void addMember(const QString& name, const QString& pcname, int usericon, const QChar& symbol, const QString& realname, const QString& type_name);
+    void addMember(const QString& name, const QString& pcname, int usericon, const QChar& symbol, const QString& realname, const QString& type_name, const QString& gpc);
+    void addMember(const QString& name, const QString& pcname, const QString& props);
     void removeMember(const QString& name);
 };
 

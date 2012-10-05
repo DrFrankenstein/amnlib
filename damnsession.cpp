@@ -60,14 +60,29 @@ QHash<QString, dAmnUser*>& dAmnSession::users()
 dAmnUser* dAmnSession::addUser(const QString& name,
                                int usericon,
                                const QChar& symbol,
-                               const QString &realname,
-                               const QString &type_name)
+                               const QString& realname,
+                               const QString& type_name,
+                               const QString& gpc)
 {
     dAmnUser* user = this->_users.value(name);
 
     if(!user)
     {
-        user = new dAmnUser(this, name, symbol, usericon, realname, type_name);
+        user = new dAmnUser(this, name, symbol, usericon, realname, type_name, gpc);
+        this->_users.insert(name, user);
+    }
+
+    return user;
+}
+
+dAmnUser* dAmnSession::addUser(const QString& name, const QString& props)
+{
+    dAmnUser* user =this->_users.value(name);
+
+    if(!user)
+    {
+        user = new dAmnUser(this, name);
+        user->setProperties(props);
         this->_users.insert(name, user);
     }
 
@@ -137,8 +152,10 @@ void dAmnSession::handlePacket(dAmnPacket& packet)
         break;
     case dAmnPacket::whois:
         this->handleWhois(packet);
+        break;
     case dAmnPacket::recv:
-
+        this->handleRecv(packet);
+        break;
 
     default:
         MNLIB_DEBUG("Unhandled packet: %s", packet.toByteArray().data());
@@ -410,3 +427,73 @@ void dAmnSession::handleWhois(dAmnPacket& packet)
     emit gotWhois(event);
 }
 
+void dAmnSession::handleRecv(dAmnPacket& packet)
+{
+    dAmnChatroomIdentifier id (this, packet.param());
+
+    dAmnChatroom* room = this->_chatrooms.value(packet.param());
+
+    dAmnPacket& sub = packet.subPacket();
+
+    switch(sub.command())
+    {
+    case dAmnPacket::msg:
+        handleMsg(packet, room);
+        break;
+    case dAmnPacket::action:
+        handleAction(packet, room);
+        break;
+    case dAmnPacket::join:
+        handlePeerJoin(packet, room);
+        break;
+    case dAmnPacket::part:
+        handlePeerPart(packet, room);
+        break;
+    case dAmnPacket::kick:
+        handlePeerKick(packet, room);
+        break;
+
+    case dAmnPacket::unknown:
+        MNLIB_WARN("Unknown recv type in chatroom %s. Dropped. Raw: %s", packet.param(), packet.toByteArray().constData());
+    }
+}
+
+void dAmnSession::handleMsg(dAmnPacket& packet, dAmnChatroom* room)
+{
+    MsgEvent event (this, packet);
+
+    room->notifyMessage(event);
+    emit gotMsg(event);
+}
+
+void dAmnSession::handleAction(dAmnPacket& packet, dAmnChatroom* room)
+{
+    ActionEvent event (this, packet);
+
+    room->notifyAction(event);
+    emit gotAction(event);
+}
+
+void dAmnSession::handlePeerJoin(dAmnPacket& packet, dAmnChatroom* room)
+{
+    JoinEvent event (this, packet);
+
+    room->notifyJoin(event);
+    emit peerJoined(event);
+}
+
+void dAmnSession::handlePeerPart(dAmnPacket& packet, dAmnChatroom* room)
+{
+    PartEvent event (this, packet);
+
+    room->notifyPart(event);
+    emit peerParted(event);
+}
+
+void dAmnSession::handlePeerKick(dAmnPacket& packet, dAmnChatroom* room)
+{
+    KickEvent event (this, packet);
+
+    room->notifyKick(event);
+    emit peerKicked(event);
+}

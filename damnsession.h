@@ -75,9 +75,11 @@ public:
     QHash<QString, dAmnUser*>& users();
     dAmnUser* addUser(const QString& name,
                       int usericon,
-                      const QChar &symbol,
-                      const QString &realname,
-                      const QString& type_name);
+                      const QChar& symbol,
+                      const QString& realname,
+                      const QString& type_name,
+                      const QString& gpc);
+    dAmnUser* addUser(const QString& name, const QString& props);
     void cleanupUser(const QString& name);
 
     bool isMe(const QString& name);
@@ -86,7 +88,6 @@ public:
     void send(dAmnPacket& packet);
 
     void login();
-
 
     void join(const QString& name, dAmnChatroom::Type type = dAmnChatroom::chat);
     void join(const dAmnChatroomIdentifier& id);
@@ -156,20 +157,22 @@ private:
     void handleProperty(dAmnPacket& packet);
     void handleWhois(dAmnPacket& packet);
 
-    void handleMsg(dAmnPacket& packet);
-    void handleAction(dAmnPacket& packet);
+    void handleRecv(dAmnPacket& packet);
 
-    void handlePeerJoin(dAmnPacket& packet);
-    void handlePeerPart(dAmnPacket& packet);
-    void handlePeerKick(dAmnPacket& packet);
+    void handleMsg(dAmnPacket& packet, dAmnChatroom* room);
+    void handleAction(dAmnPacket& packet, dAmnChatroom* room);
 
-    void handlePrivchg(dAmnPacket& packet);
-    void handlePrivUpdate(dAmnPacket& packet);
-    void handlePrivMove(dAmnPacket& packet);
-    void handlePrivRemove(dAmnPacket& packet);
+    void handlePeerJoin(dAmnPacket& packet, dAmnChatroom* room);
+    void handlePeerPart(dAmnPacket& packet, dAmnChatroom* room);
+    void handlePeerKick(dAmnPacket& packet, dAmnChatroom* room);
 
-    void handlePrivShow(dAmnPacket& packet);
-    void handlePrivUsers(dAmnPacket& packet);
+    void handlePrivchg(dAmnPacket& packe, dAmnChatroom* roomt);
+    void handlePrivUpdate(dAmnPacket& packet, dAmnChatroom* room);
+    void handlePrivMove(dAmnPacket& packet, dAmnChatroom* room);
+    void handlePrivRemove(dAmnPacket& packet, dAmnChatroom* room);
+
+    void handlePrivShow(dAmnPacket& packet, dAmnChatroom* room);
+    void handlePrivUsers(dAmnPacket& packet, dAmnChatroom* room);
 
     void handkeKick(dAmnPacket& packet);
     void handleDisconnect(dAmnPacket& packet);

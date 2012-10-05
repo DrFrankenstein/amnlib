@@ -193,7 +193,7 @@ PropertyEvent::PropertyEvent(dAmnSession* parent, dAmnPacket& packet)
         this->_property = topic;
     else if(this->_propertystr == "title")
         this->_property = title;
-    else if(this->_propertystr == "privclass")
+    else if(this->_propertystr == "privclasses")
         this->_property = privclasses;
     else if(this->_propertystr == "members")
         this->_property = members;
@@ -411,10 +411,15 @@ JoinEvent::JoinEvent(dAmnSession* parent, dAmnPacket& packet)
     dAmnPacket& data = packet.subPacket();
 
     this->_username = data.param();
+    this->_props = data.data();
 }
 const QString& JoinEvent::userName() const
 {
     return this->_username;
+}
+const QString& JoinEvent::properties() const
+{
+    return this->_props;
 }
 ///////////////////////////////////////////////////////////////////////////////
 PartEvent::PartEvent(dAmnSession* parent, dAmnPacket& packet)

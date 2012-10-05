@@ -194,10 +194,11 @@ public:
 
 class MNLIBSHARED_EXPORT JoinEvent : public ChatroomEvent
 {
-    QString _username;
+    QString _username, _props;
 public:
     JoinEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
+    const QString& properties() const;
 };
 
 class MNLIBSHARED_EXPORT PartEvent : public ChatroomEvent

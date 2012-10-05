@@ -53,6 +53,13 @@ public:
 
     QUrl iconUrl() const;
     QUrl profileUrl() const;
+
+protected:
+    void setName(const QString& name);
+    void setRealname(const QString& realname);
+    void setTypeName(const QString& type);
+    void setSymbol(const QChar& symbol);
+    void setUsericon(int usericon);
 };
 
 #endif // DEVIANT_H
