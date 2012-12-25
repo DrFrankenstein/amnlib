@@ -343,6 +343,7 @@ void dAmnChatroom::addMember(const QString& name, const QString& pcname, const Q
     }
 
     pc->addUser(user);
+    user->chatrooms().insert(this);
     this->_membersToPc.insert(name, pc);
 }
 
@@ -356,7 +357,15 @@ void dAmnChatroom::removeMember(const QString& name)
         return;
     }
 
-    pc->removeUser(session()->users().value(name));
+    dAmnUser* user = session()->users().value(name);
+    if(!user)
+    {
+        MNLIB_WARN("Attempt to remove unknown member %s from chatroom %s",
+                   qPrintable(name), this->_name);
+        return;
+    }
+    pc->removeUser(user);
+    user->chatrooms().remove(this);
     session()->cleanupUser(name);
 }
 
