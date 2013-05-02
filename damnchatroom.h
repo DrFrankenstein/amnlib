@@ -95,7 +95,9 @@ public:
     void notifyAction(const ActionEvent& event);
     void notifyJoin(const JoinEvent& event);
     void notifyPart(const PartEvent& event);
+    void notifyPrivchg(const PrivchgEvent& event);
     void notifyKick(const KickEvent& event);
+    void notifyPrivUpdate(const PrivUpdateEvent& event);
 
 signals:
     void message(const QString& user, const QString& content);

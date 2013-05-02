@@ -91,6 +91,7 @@ void dAmnPrivClass::apply(QString commands)
         case avatars:   this->_avatarspriv = value;     break;
         case websites:  this->_websitespriv = value;    break;
         case objects:   this->_objectspriv = value;     break;
+        case order:     this->_order = value;           break;
         default: qt_noop();
         }
     }
@@ -103,6 +104,7 @@ void dAmnPrivClass::initKPriv()
 #   define KPRIV(name) _kpriv_map[#name] = name;
     KPRIV(join) KPRIV(title) KPRIV(kick) KPRIV(msg) KPRIV(shownotice) KPRIV(admin)
     KPRIV(images) KPRIV(smilies) KPRIV(emoticons) KPRIV(thumbs) KPRIV(avatars) KPRIV(websites) KPRIV(objects)
+    KPRIV(order)
 #   undef KPRIV
 }
 
@@ -119,12 +121,12 @@ const QString& dAmnPrivClass::name() const
     return this->_name;
 }
 
-uint dAmnPrivClass::order() const
+uint dAmnPrivClass::orderValue() const
 {
     return this->_order;
 }
 
-void dAmnPrivClass::setOrder(uint order)
+void dAmnPrivClass::setOrderValue(uint order)
 {
     this->_order = order;
 }

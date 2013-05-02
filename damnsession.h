@@ -67,7 +67,7 @@ private slots:
     void socketStateChange(QAbstractSocket::SocketState socketState);
 
 public:
-    dAmnSession(const QString& username, const QByteArray &token);
+    dAmnSession(const QString& username, const QByteArray &token, QObject* parent);
     virtual ~dAmnSession();
 
     const QString& userName() const;
@@ -97,6 +97,8 @@ public:
     void kill(const QString& username, const QString& reason = QString());
 
     void pong();
+
+    QString errorString() const;
 
     void quit();
 
@@ -139,7 +141,7 @@ signals:
 
     void socketError(QAbstractSocket::SocketError socketError);
 
-    void stateChange(State state);
+    void stateChange(dAmnSession::State state);
 
 private:
     void sendCredentials();
@@ -166,7 +168,7 @@ private:
     void handlePeerPart(dAmnPacket& packet, dAmnChatroom* room);
     void handlePeerKick(dAmnPacket& packet, dAmnChatroom* room);
 
-    void handlePrivchg(dAmnPacket& packe, dAmnChatroom* roomt);
+    void handlePrivchg(dAmnPacket& packet, dAmnChatroom* room);
     void handlePrivUpdate(dAmnPacket& packet, dAmnChatroom* room);
     void handlePrivMove(dAmnPacket& packet, dAmnChatroom* room);
     void handlePrivRemove(dAmnPacket& packet, dAmnChatroom* room);

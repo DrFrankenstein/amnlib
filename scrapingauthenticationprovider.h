@@ -52,12 +52,15 @@ signals:
     void sslErrors(QNetworkReply* reply, const QList<QSslError>& errors);
 
     void tokenAvailable(const QByteArray& token);
-    void error(QNetworkReply::NetworkError error);
+    void error(QNetworkReply::NetworkError error, QString errorString);
     void noToken();
 
 private slots:
     void gotCookie();
     void gotToken();
+
+    void cookieError(QNetworkReply::NetworkError errorcode);
+    void tokenError(QNetworkReply::NetworkError errorcode);
 };
 
 #endif // SCRAPINGAUTHENTICATIONPROVIDER_H

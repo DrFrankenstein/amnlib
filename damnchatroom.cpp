@@ -167,7 +167,7 @@ void dAmnChatroom::updatePrivclasses(const QString& data)
         if(this->_privclasses.contains(pcname))
         {
             dAmnPrivClass* pc = this->_privclasses[pcname];
-            pc->setOrder(idx);
+            pc->setOrderValue(idx);
         }
         else
         {
@@ -396,10 +396,49 @@ void dAmnChatroom::notifyPart(const PartEvent& event)
     emit parted(event.userName(), event.reason());
 }
 
+void dAmnChatroom::notifyPrivchg(const PrivchgEvent& event)
+{
+    QString userName = event.userName();
+    dAmnPrivClass* oldpc = this->_membersToPc.value(userName);
+    dAmnUser* user = this->session()->users().value(userName);
+    oldpc->removeUser(user);
+    this->_membersToPc.remove(userName);
+
+    dAmnPrivClass* newpc = this->_privclasses.value(event.privClass());
+    newpc->addUser(user);
+    this->_membersToPc.insert(userName, newpc);
+
+    emit privchg(userName, event.adminName(), event.privClass());
+}
+
 void dAmnChatroom::notifyKick(const KickEvent& event)
 {
     this->removeMember(event.userName());
     emit kicked(event.userName(), event.kickerName(), event.reason());
+}
+
+void dAmnChatroom::notifyPrivUpdate(const PrivUpdateEvent& event)
+{
+    dAmnPrivClass* pc;
+
+    switch(event.action())
+    {
+    case PrivUpdateEvent::update:
+        pc = this->_privclasses.value(event.privClass());
+
+        if(pc) break;
+        else
+        {
+            MNLIB_WARN("Recieved update on unknown privclass %s in %s. Creating it.");
+        }
+
+    default:
+    case PrivUpdateEvent::create:
+        pc = new dAmnPrivClass(this, event.privClass(), 0);
+        break;
+    }
+
+    pc->apply(event.privString());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

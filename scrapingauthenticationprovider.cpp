@@ -65,57 +65,60 @@ void ScrapingAuthenticationProvider::requestAuthToken(const QString& username,
     this->cookieReply = this->http.post(request, loginData);
     connect(this->cookieReply, SIGNAL(finished()), this, SLOT(gotCookie()));
     connect(this->cookieReply, SIGNAL(error(QNetworkReply::NetworkError)),
-            this, SIGNAL(error(QNetworkReply::NetworkError)));
+            this, SLOT(cookieError(QNetworkReply::NetworkError)));
 }
 
 void ScrapingAuthenticationProvider::gotCookie()
 {
-    //QNetworkRequest req = this->cookieReply->request();
-
-    //qDebug() << "REQUEST--------------------------------------------------------";
-    //qDebug() << "ContentTypeHeader=" << req.header(QNetworkRequest::ContentTypeHeader);
-    //QByteArray header;
-    //foreach(header, req.rawHeaderList())
-    //{
-    //   qDebug() << header << req.rawHeader(header);
-    //}
-
-    //qDebug() << "\nRESPONSE-----------------------------------------------------";
-    //qDebug() << this->cookieReply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    //qDebug() << this->cookieReply->attribute(QNetworkRequest::HttpReasonPhraseAttribute);
-    //qDebug() << "ContentTypeHeader=" << req.header(QNetworkRequest::ContentTypeHeader);
-    //qDebug() << "LocationHeader=" << req.header(QNetworkRequest::LocationHeader);
-    //QNetworkReply::RawHeaderPair headerpair;
-    //foreach(headerpair, this->cookieReply->rawHeaderPairs())
-    //{
-    //    qDebug() << headerpair.first << ": " << headerpair.second;
-    //}
-
-    QList<QNetworkCookie> cookies = this->http.cookieJar()
-            ->cookiesForUrl(QUrl("https://www.deviantart.com/"));
-    bool found = false;
-    foreach(QNetworkCookie cookie, cookies)
+    if(this->cookieReply->error() == QNetworkReply::NoError)
     {
-        //qDebug() << cookie.name() << '=' << cookie.value();
-        if(cookie.name() == "auth")
+        //QNetworkRequest req = this->cookieReply->request();
+
+        //qDebug() << "REQUEST--------------------------------------------------------";
+        //qDebug() << "ContentTypeHeader=" << req.header(QNetworkRequest::ContentTypeHeader);
+        //QByteArray header;
+        //foreach(header, req.rawHeaderList())
+        //{
+        //   qDebug() << header << req.rawHeader(header);
+        //}
+
+        //qDebug() << "\nRESPONSE-----------------------------------------------------";
+        //qDebug() << this->cookieReply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+        //qDebug() << this->cookieReply->attribute(QNetworkRequest::HttpReasonPhraseAttribute);
+        //qDebug() << "ContentTypeHeader=" << req.header(QNetworkRequest::ContentTypeHeader);
+        //qDebug() << "LocationHeader=" << req.header(QNetworkRequest::LocationHeader);
+        //QNetworkReply::RawHeaderPair headerpair;
+        //foreach(headerpair, this->cookieReply->rawHeaderPairs())
+        //{
+        //    qDebug() << headerpair.first << ": " << headerpair.second;
+        //}
+
+        QList<QNetworkCookie> cookies = this->http.cookieJar()
+                ->cookiesForUrl(QUrl("https://www.deviantart.com/"));
+        bool found = false;
+        foreach(QNetworkCookie cookie, cookies)
         {
-            found = true;
-            break;
+            //qDebug() << cookie.name() << '=' << cookie.value();
+            if(cookie.name() == "auth")
+            {
+                found = true;
+                break;
+            }
         }
-    }
 
-    if(found)
-    {
-        QNetworkRequest request (QUrl("http://chat.deviantart.com/chat/devart"));
-        this->tokenReply = this->http.get(request);
-        connect(this->tokenReply, SIGNAL(finished()), this, SLOT(gotToken()));
-        connect(this->tokenReply, SIGNAL(error(QNetworkReply::NetworkError)),
-                this, SIGNAL(error(QNetworkReply::NetworkError)));
-    }
-    else
-    {
-        MNLIB_CRIT("Authentication failed. (no cookie)");
-        emit noToken();
+        if(found)
+        {
+            QNetworkRequest request (QUrl("http://chat.deviantart.com/chat/devart"));
+            this->tokenReply = this->http.get(request);
+            connect(this->tokenReply, SIGNAL(finished()), this, SLOT(gotToken()));
+            connect(this->tokenReply, SIGNAL(error(QNetworkReply::NetworkError)),
+                    this, SLOT(tokenError(QNetworkReply::NetworkError)));
+        }
+        else
+        {
+            MNLIB_CRIT("Authentication failed. (no cookie)");
+            emit noToken();
+        }
     }
 
     this->cookieReply->close();
@@ -144,4 +147,14 @@ void ScrapingAuthenticationProvider::gotToken()
 
     this->tokenReply->deleteLater();
     this->tokenReply = NULL;
+}
+
+void ScrapingAuthenticationProvider::cookieError(QNetworkReply::NetworkError errorcode)
+{
+    emit error(errorcode, tr("Could not get authentication cookie: %1").arg(this->cookieReply->errorString()));
+}
+
+void ScrapingAuthenticationProvider::tokenError(QNetworkReply::NetworkError errorcode)
+{
+    emit error(errorcode, tr("Could not fetch authentication token: %1").arg(this->tokenReply->errorString()));
 }

@@ -47,7 +47,7 @@ public:
     {
         unknown,
         join, title, topic, kick, msg, shownotice, admin,
-        images, smilies, emoticons, thumbs, avatars, websites, objects
+        images, smilies, emoticons, thumbs, avatars, websites, objects, order
     };
 
 private:
@@ -63,8 +63,8 @@ public:
     void apply(QString command);
 
     const QString& name() const;
-    uint order() const;
-    void setOrder(uint order);
+    uint orderValue() const;
+    void setOrderValue(uint order);
 
     bool joinPriv() const;
     bool titlePriv() const;

@@ -23,12 +23,22 @@
 
 #include <QHostAddress>
 #include <QRegExp>
+#include <QCoreApplication>
 
-dAmnSession::dAmnSession(const QString& username, const QByteArray& token)
-    : _state(offline), _packetdevice(this, this->_socket), _socket(this),
+dAmnSession::dAmnSession(const QString& username, const QByteArray& token, QObject* parent)
+    : QObject(parent),
+      _state(offline), _packetdevice(this, this->_socket), _socket(this),
       _username(username), _authtoken(token)
 {
-    _useragent = tr("mnlib/").append(MNLIB_VERSION);
+    QCoreApplication* app = QCoreApplication::instance();
+    QString name;
+    if(app)
+        name = app->applicationName();
+
+    if(!name.isEmpty())
+        _useragent = app->applicationName().append('/').append(app->applicationVersion());
+    else
+        _useragent = QString("mnlib/").append(MNLIB_VERSION);
 
     connect(&this->_socket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SIGNAL(socketError(QAbstractSocket::SocketError)));
@@ -113,6 +123,11 @@ bool dAmnSession::isMe(const QString& name)
     return false;
 }
 
+QString dAmnSession::errorString() const
+{
+    return this->_socket.errorString();
+}
+
 void dAmnSession::connectToHost()
 {
     if(this->_state == offline)
@@ -149,9 +164,6 @@ void dAmnSession::handlePacket(dAmnPacket& packet)
         break;
     case dAmnPacket::property:
         this->handleProperty(packet);
-        break;
-    case dAmnPacket::whois:
-        this->handleWhois(packet);
         break;
     case dAmnPacket::recv:
         this->handleRecv(packet);
@@ -380,6 +392,12 @@ void dAmnSession::handlePing()
 
 void dAmnSession::handleProperty(dAmnPacket& packet)
 {
+    if(packet.param().startsWith("login:"))
+    {
+        this->handleWhois(packet);
+        return;
+    }
+
     PropertyEvent event (this, packet);
     QString idstring = event.chatroom().toIdString();
 
@@ -449,8 +467,11 @@ void dAmnSession::handleRecv(dAmnPacket& packet)
     case dAmnPacket::part:
         handlePeerPart(packet, room);
         break;
-    case dAmnPacket::kick:
+    case dAmnPacket::kicked:
         handlePeerKick(packet, room);
+        break;
+    case dAmnPacket::privchg:
+        handlePrivchg(packet, room);
         break;
 
     case dAmnPacket::unknown:
@@ -497,3 +518,20 @@ void dAmnSession::handlePeerKick(dAmnPacket& packet, dAmnChatroom* room)
     room->notifyKick(event);
     emit peerKicked(event);
 }
+
+void dAmnSession::handlePrivchg(dAmnPacket& packet, dAmnChatroom* room)
+{
+    PrivchgEvent event (this, packet);
+
+    room->notifyPrivchg(event);
+    emit privchged(event);
+}
+
+void dAmnSession::handlePrivUpdate(dAmnPacket& packet, dAmnChatroom* room)
+{
+    PrivUpdateEvent event (this, packet);
+
+    room->notifyPrivUpdate(event);
+    emit privUpdated(event);
+}
+
