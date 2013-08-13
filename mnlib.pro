@@ -20,7 +20,7 @@ SOURCES += damnsession.cpp \
     damnpacketparser.cpp \
     damnpacketdevice.cpp \
     scrapingauthenticationprovider.cpp \
-    damntablumpsparser.cpp
+    damnrichtext.cpp
 HEADERS += damnsession.h \
     mnlib_global.h \
     damnpacket.h \
@@ -35,7 +35,7 @@ HEADERS += damnsession.h \
     damnpacketparser.h \
     damnpacketdevice.h \
     scrapingauthenticationprovider.h \
-    damntablumpsparser.h
+    damnrichtext.h
 debug:DEFINES += MNLIB_DEBUG_BUILD
 else:DEFINES += MNLIB_RELEASE_BUILD
 

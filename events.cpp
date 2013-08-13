@@ -221,6 +221,10 @@ const QString& PropertyEvent::value() const
 {
     return this->_value;
 }
+dAmnRichText PropertyEvent::text() const
+{
+    return dAmnRichText(this->_value);
+}
 ///////////////////////////////////////////////////////////////////////////////
 WhoisEvent::WhoisEvent(dAmnSession* parent, dAmnPacket& packet)
     : dAmnEvent(parent, packet)
@@ -375,13 +379,13 @@ MsgEvent::MsgEvent(dAmnSession* parent, dAmnPacket& packet)
     Q_ASSERT(data.param() == "main");
 
     this->_username = data.arg("from");
-    this->_message  = data.data();
+    this->_message  = dAmnRichText(data.data());
 }
 const QString& MsgEvent::userName() const
 {
     return this->_username;
 }
-const QString& MsgEvent::message() const
+const dAmnRichText& MsgEvent::message() const
 {
     return this->_message;
 }
@@ -394,13 +398,13 @@ ActionEvent::ActionEvent(dAmnSession* parent, dAmnPacket& packet)
     Q_ASSERT(data.param() == "main");
 
     this->_username = data.arg("from");
-    this->_action   = data.data();
+    this->_action   = dAmnRichText(data.data());
 }
 const QString& ActionEvent::userName() const
 {
     return this->_username;
 }
-const QString& ActionEvent::action() const
+const dAmnRichText& ActionEvent::action() const
 {
     return this->_action;
 }
@@ -468,7 +472,7 @@ KickEvent::KickEvent(dAmnSession* parent, dAmnPacket& packet)
 
     this->_username = data.param();
     this->_kicker = data.arg("by");
-    this->_reason = data.data();
+    this->_reason = dAmnRichText(data.data());
 }
 const QString& KickEvent::userName() const
 {
@@ -478,7 +482,7 @@ const QString& KickEvent::kickerName() const
 {
     return this->_kicker;
 }
-const QString& KickEvent::reason() const
+const dAmnRichText& KickEvent::reason() const
 {
     return this->_reason;
 }
@@ -649,7 +653,7 @@ const QString& KickedEvent::kicker() const
 {
     return this->_kicker;
 }
-const QString& KickedEvent::reason() const
+const dAmnRichText& KickedEvent::reason() const
 {
     return this->_reason;
 }

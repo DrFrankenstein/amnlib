@@ -23,6 +23,7 @@
 #include "mnlib_global.h"
 #include "damnchatroom.h"
 #include "timespan.h"
+#include "damnrichtext.h"
 
 #include <QObject>
 #include <QChar>
@@ -143,6 +144,7 @@ public:
     const QString& author() const;
     const QDateTime& timeStamp() const;
     const QString& value() const;
+    dAmnRichText text() const;
 };
 
 class MNLIBSHARED_EXPORT WhoisEvent : public dAmnEvent
@@ -176,20 +178,22 @@ private:
 
 class MNLIBSHARED_EXPORT MsgEvent : public ChatroomEvent
 {
-    QString _username, _message;
+    QString _username;
+    dAmnRichText _message;
 public:
     MsgEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
-    const QString& message() const;
+    const dAmnRichText& message() const;
 };
 
 class MNLIBSHARED_EXPORT ActionEvent : public ChatroomEvent
 {
-    QString _username, _action;
+    QString _username;
+    dAmnRichText _action;
 public:
     ActionEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
-    const QString& action() const;
+    const dAmnRichText& action() const;
 };
 
 class MNLIBSHARED_EXPORT JoinEvent : public ChatroomEvent
@@ -222,12 +226,13 @@ public:
 
 class MNLIBSHARED_EXPORT KickEvent : public ChatroomEvent
 {
-    QString _username, _kicker, _reason;
+    QString _username, _kicker;
+    dAmnRichText _reason;
 public:
     KickEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& userName() const;
     const QString& kickerName() const;
-    const QString& reason() const;
+    const dAmnRichText& reason() const;
 };
 
 class MNLIBSHARED_EXPORT PrivUpdateEvent : public ChatroomEvent
@@ -304,11 +309,12 @@ public:
 
 class MNLIBSHARED_EXPORT KickedEvent : public ChatroomEvent
 {
-    QString _kicker, _reason;
+    QString _kicker;
+    dAmnRichText _reason;
 public:
     KickedEvent(dAmnSession* parent, dAmnPacket& packet);
     const QString& kicker() const;
-    const QString& reason() const;
+    const dAmnRichText& reason() const;
 };
 
 class MNLIBSHARED_EXPORT DisconnectEvent : public dAmnEvent

@@ -37,6 +37,7 @@ class dAmnSession;
 class dAmnPrivClass;
 class dAmnUser;
 class dAmnPacket;
+class dAmnRichText;
 
 class MNLIBSHARED_EXPORT dAmnChatroom : public dAmnObject
 {
@@ -100,14 +101,14 @@ public:
     void notifyPrivUpdate(const PrivUpdateEvent& event);
 
 signals:
-    void message(const QString& user, const QString& content);
-    void action(const QString& user, const QString& content);
+    void message(const QString& user, const dAmnRichText& content);
+    void action(const QString& user, const dAmnRichText& content);
 
     void joined(const QString& user);
     void parted(const QString& user, const QString& reason);
 
     void privchg(const QString& user, const QString& by, const QString& pc);
-    void kicked(const QString& user, const QString& by, const QString& reason);
+    void kicked(const QString& user, const QString& by, const dAmnRichText& reason);
 
 private:
     Type _type;

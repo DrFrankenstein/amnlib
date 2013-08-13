@@ -37,11 +37,6 @@ class MNLIBSHARED_EXPORT Deviant : public QObject
     int _usericon;
 
 public:
-    enum IconType
-    {
-        gif, jpg, png
-    };
-
     Deviant(QObject* parent, const QString& name, const QChar& symbol = QChar::Null,
             int usericon = 0, const QString& realname = QString(), const QString& type = QString());
 
@@ -49,10 +44,11 @@ public:
     const QString& realName() const;
     const QString& typeName() const;
     const QChar& symbol() const;
-    IconType iconType() const;
 
     QUrl iconUrl() const;
     QUrl profileUrl() const;
+
+    static QUrl iconUrl(QString name, int usericon);
 
 protected:
     void setName(const QString& name);

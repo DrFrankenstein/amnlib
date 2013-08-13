@@ -75,25 +75,17 @@ void Deviant::setUsericon(int usericon)
     this->_usericon = usericon;
 }
 
-Deviant::IconType Deviant::iconType() const
-{
-    switch(this->_usericon & 3)
-    {
-    case 0:
-    case 1: return gif;
-    case 2: return jpg;
-    case 3: return png;
-    }
-
-    return gif; // keep compiler happy.
-}
-
 QUrl Deviant::iconUrl() const
 {
-    QString urlstr = "http://a.deviantart.com/avatars/",
-            name = this->_name.toLower();
+    return iconUrl(this->_name, this->_usericon);
+}
 
-    if(this->_usericon)
+QUrl Deviant::iconUrl(QString name, int usericon)
+{
+    QString urlstr = "http://a.deviantart.com/avatars/";
+    name = name.toLower();
+
+    if(usericon)
     {
         QChar chunk = name[0];
         urlstr += (chunk.isLetterOrNumber()? chunk : '_') + '/';
@@ -106,11 +98,12 @@ QUrl Deviant::iconUrl() const
         urlstr += "default";
     }
 
-    switch(this->iconType())
+    switch(usericon & 3)
     {
-    case gif: urlstr += ".gif"; break;
-    case jpg: urlstr += ".jpg"; break;
-    case png: urlstr += ".png"; break;
+    case 0:
+    case 1: urlstr += ".gif"; break;
+    case 2: urlstr += ".jpg"; break;
+    case 3: urlstr += ".png"; break;
     }
 
     return QUrl(urlstr);
