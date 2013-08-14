@@ -184,7 +184,7 @@ QString dAmnRichText::toPlain() const
     result.reserve(this->sizehint);
 
     QStack<Element> state;
-    unsigned int listcount;
+    QStack<uint> listcounts;
 
     Element el;
     foreach(el, this->tablumps)
@@ -197,7 +197,7 @@ QString dAmnRichText::toPlain() const
         case end_p: result += "\n\n"; break;
 
         case start_ol:
-            listcount = 0;
+            listcounts.push(0);
         case start_ul:
         case start_abbr:
         case start_acro:
@@ -207,13 +207,19 @@ QString dAmnRichText::toPlain() const
 
         case start_li:
             if(state.top().type == start_ol)
-                result += QString("\n %1. ").arg(listcount);
+            {
+                uint count = listcounts.pop();
+                result += QString("\n %1. ").arg(count++);
+                listcounts.push(count);
+            }
             else
                 result += "\n * ";
             break;
 
+        case end_ol:
+            listcounts.pop();
         case end_ul:
-        case end_ol: state.pop(); break;
+            state.pop(); break;
 
         case end_a:
             el = state.pop();
@@ -423,7 +429,7 @@ QString dAmnRichText::toDAml() const
         case end_embed: result += "</embed>"; break;
         case br: result += "\n"; break;
         case dev: result += ":dev" % el.args[1] % ':'; break;
-        case avatar: result += "icon" % el.args[0] % ':'; break;
+        case avatar: result += ":icon" % el.args[0] % ':'; break;
         case img: result += "<img src=\"" % htmlEncode(el.args[0])
                             % "\" alt=\"" % htmlEncode(el.args[1])
                             % "\" title=\"" % htmlEncode(el.args[2]) % "\">"; break;
