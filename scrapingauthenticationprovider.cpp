@@ -1,7 +1,7 @@
-/*
+﻿/*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright � 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ class dAmnSession;
 #include <QNetworkReply>
 #include <QList>
 #include <QNetworkCookie>
+#include <QNetworkCookieJar>
 #include <QUrl>
 #include <QByteArray>
 #include <QVariant>
@@ -135,7 +136,7 @@ void ScrapingAuthenticationProvider::gotToken()
     int pos = rx.indexIn(data);
     if(pos >= 0)
     {
-        QByteArray token = rx.cap(1).toAscii();
+        QByteArray token = rx.cap(1).toLatin1();
         MNLIB_DEBUG("Token accepted: %s", token.data());
         emit tokenAvailable(token);
     }

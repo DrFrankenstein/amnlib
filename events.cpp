@@ -1,7 +1,7 @@
-/*
+﻿/*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright � 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -541,7 +541,7 @@ PrivMoveEvent::PrivMoveEvent(dAmnSession* parent, dAmnPacket& packet)
     this->_oldname = data.arg("prev");
     this->_newname = data.arg("name");
 
-    bool ok;
+    bool ok = false;
     if(this->_action == move)
         this->_usersaffected = data.arg("n").toInt(&ok, 10);
     if(this->_action != move || !ok)

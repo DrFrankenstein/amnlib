@@ -1,7 +1,7 @@
-/*
+﻿/*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright � 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@ void dAmnChatroom::updatePrivclasses(const QString& data)
             continue;
         }
 
-        int idx = split[0].toInt(&ok);
+        uint idx = split[0].toUInt(&ok);
         if(!ok)
         {
             MNLIB_WARN("Could not parse privclass order: %s",
@@ -436,6 +436,8 @@ void dAmnChatroom::notifyPrivUpdate(const PrivUpdateEvent& event)
     case PrivUpdateEvent::create:
         pc = new dAmnPrivClass(this, event.privClass(), 0);
         break;
+
+	case PrivUpdateEvent::unknown: qt_noop();
     }
 
     pc->apply(event.privString());

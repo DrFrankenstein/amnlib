@@ -1,7 +1,7 @@
-/*
+﻿/*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright � 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -158,7 +158,8 @@ dAmnPacket& dAmnPacket::subPacket()
     if(!this->_subpacket)
     {
         dAmnPacketParser parser (this->session());
-        this->_subpacket = parser.parsePacket(&this->_data.toUtf8());
+		QByteArray data = this->_data.toUtf8();
+        this->_subpacket = parser.parsePacket(&data);
     }
 
     return *this->_subpacket;

@@ -1,7 +1,7 @@
-/*
+﻿/*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright � 2011 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2011 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ public:
     };
 
 private:
-    size_t sizehint;
+    int sizehint;
     QLinkedList<Element> tablumps;
 
     static QHash<QString, ElementType> map;

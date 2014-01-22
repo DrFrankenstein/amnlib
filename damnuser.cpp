@@ -1,4 +1,4 @@
-#include "damnuser.h"
+﻿#include "damnuser.h"
 
 #include <QString>
 #include <QChar>

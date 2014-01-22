@@ -1,7 +1,7 @@
-/*
+﻿/*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright � 2013 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2013 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -170,6 +170,9 @@ void dAmnRichText::initMap()
 
 dAmnRichText::ElementType dAmnRichText::getType(const QString& name)
 {
+    if(map.isEmpty())
+        initMap();
+
     return map.value(name);
 }
 

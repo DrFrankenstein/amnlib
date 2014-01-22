@@ -1,7 +1,7 @@
-/*
+﻿/*
     This file is part of
     amnlib - A C++ library for deviantART Message Network
-    Copyright � 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
+    Copyright © 2010 Carl Tessier <http://drfrankenstein90.deviantart.com/>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,6 +79,7 @@ void dAmnPrivClass::apply(QString commands)
         switch(getPriv(priv))
         {
         case join:      this->_joinpriv = value;        break;
+		case topic:		this->_topicpriv = value;       break;
         case title:     this->_titlepriv = value;       break;
         case kick:      this->_kickpriv = value;        break;
         case msg:       this->_msgpriv = value;         break;
@@ -91,8 +92,8 @@ void dAmnPrivClass::apply(QString commands)
         case avatars:   this->_avatarspriv = value;     break;
         case websites:  this->_websitespriv = value;    break;
         case objects:   this->_objectspriv = value;     break;
-        case order:     this->_order = value;           break;
-        default: qt_noop();
+        case order:     this->_order = (uint) value;    break;
+		case unknown: default: qt_noop();
         }
     }
 }
