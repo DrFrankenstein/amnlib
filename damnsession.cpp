@@ -87,7 +87,7 @@ dAmnUser* dAmnSession::addUser(const QString& name,
 
 dAmnUser* dAmnSession::addUser(const QString& name, const QString& props)
 {
-    dAmnUser* user =this->_users.value(name);
+    dAmnUser* user = this->_users.value(name);
 
     if(!user)
     {
@@ -167,6 +167,12 @@ void dAmnSession::handlePacket(dAmnPacket& packet)
         break;
     case dAmnPacket::recv:
         this->handleRecv(packet);
+        break;
+    case dAmnPacket::kicked:
+        this->handleKick(packet);
+        break;
+    case dAmnPacket::disconnect:
+        this->handleDisconnect(packet);
         break;
 
     default:
@@ -382,6 +388,24 @@ void dAmnSession::handlePart(dAmnPacket& packet)
     emit parted(event);
 }
 
+void dAmnSession::handleKick(dAmnPacket& packet)
+{
+    KickedEvent event (this, packet);
+
+    QString id = event.chatroom().toIdString();
+    delete this->_chatrooms[id];
+    this->_chatrooms.remove(id);
+
+    emit kicked(event);
+}
+
+void dAmnSession::handleDisconnect(dAmnPacket& packet)
+{
+    DisconnectEvent event (this, packet);
+
+    emit disconnected(event);
+}
+
 void dAmnSession::handlePing()
 {
     MNLIB_DEBUG("Ping? Pong!");
@@ -414,12 +438,10 @@ void dAmnSession::handleProperty(dAmnPacket& packet)
     switch(event.propertyCode())
     {
     case PropertyEvent::topic:
-        MNLIB_DEBUG("Topic of %s is %s", qPrintable(event.chatroom().toIdString()), qPrintable(event.value()));
-        chatroom->setTopic(event.value());
+        chatroom->updateTopic(event.value());
         break;
     case PropertyEvent::title:
-        MNLIB_DEBUG("Title of %s is %s", qPrintable(event.chatroom().toIdString()), qPrintable(event.value()));
-        chatroom->setTitle(event.value());
+        chatroom->updateTitle(event.value());
         break;
     case PropertyEvent::privclasses:
         MNLIB_DEBUG("Got privclasses for %s", qPrintable(event.chatroom().toIdString()));
@@ -447,9 +469,7 @@ void dAmnSession::handleWhois(dAmnPacket& packet)
 
 void dAmnSession::handleRecv(dAmnPacket& packet)
 {
-    dAmnChatroomIdentifier id (this, packet.param());
-
-    dAmnChatroom* room = this->_chatrooms.value(packet.param());
+	dAmnChatroom* room = this->_chatrooms.value(packet.param());
 
     dAmnPacket& sub = packet.subPacket();
 
@@ -473,6 +493,23 @@ void dAmnSession::handleRecv(dAmnPacket& packet)
     case dAmnPacket::privchg:
         handlePrivchg(packet, room);
         break;
+    case dAmnPacket::admin:
+    {
+        QString param = packet.param();
+        if(packet.param() == "create" || packet.param() == "update")
+            handlePrivUpdate(packet, room);
+        else if(packet.param() == "rename" || packet.param() == "move")
+            handlePrivUpdate(packet, room);
+        else if(packet.param() == "remove")
+            handlePrivRemove(packet, room);
+        else if(packet.param() == "show")
+            handlePrivShow(packet, room);
+        else if(packet.param() == "privclass")
+            handlePrivUsers(packet, room);
+        else
+            MNLIB_WARN("Unknown admin command %s in chatroom %s. Ignored.", qPrintable(packet.param()), qPrintable(room->name()));
+        break;
+    }
 
     case dAmnPacket::unknown:
         MNLIB_WARN("Unknown recv type in chatroom %s. Dropped. Raw: %s", packet.param(), packet.toByteArray().constData());
@@ -484,7 +521,7 @@ void dAmnSession::handleMsg(dAmnPacket& packet, dAmnChatroom* room)
     MsgEvent event (this, packet);
 
     room->notifyMessage(event);
-    emit gotMsg(event);
+    emit message(event);
 }
 
 void dAmnSession::handleAction(dAmnPacket& packet, dAmnChatroom* room)
@@ -492,7 +529,7 @@ void dAmnSession::handleAction(dAmnPacket& packet, dAmnChatroom* room)
     ActionEvent event (this, packet);
 
     room->notifyAction(event);
-    emit gotAction(event);
+    emit action(event);
 }
 
 void dAmnSession::handlePeerJoin(dAmnPacket& packet, dAmnChatroom* room)
@@ -500,7 +537,7 @@ void dAmnSession::handlePeerJoin(dAmnPacket& packet, dAmnChatroom* room)
     JoinEvent event (this, packet);
 
     room->notifyJoin(event);
-    emit peerJoined(event);
+    emit join(event);
 }
 
 void dAmnSession::handlePeerPart(dAmnPacket& packet, dAmnChatroom* room)
@@ -508,7 +545,7 @@ void dAmnSession::handlePeerPart(dAmnPacket& packet, dAmnChatroom* room)
     PartEvent event (this, packet);
 
     room->notifyPart(event);
-    emit peerParted(event);
+    emit part(event);
 }
 
 void dAmnSession::handlePeerKick(dAmnPacket& packet, dAmnChatroom* room)
@@ -516,7 +553,7 @@ void dAmnSession::handlePeerKick(dAmnPacket& packet, dAmnChatroom* room)
     KickEvent event (this, packet);
 
     room->notifyKick(event);
-    emit peerKicked(event);
+    emit kick(event);
 }
 
 void dAmnSession::handlePrivchg(dAmnPacket& packet, dAmnChatroom* room)
@@ -524,7 +561,7 @@ void dAmnSession::handlePrivchg(dAmnPacket& packet, dAmnChatroom* room)
     PrivchgEvent event (this, packet);
 
     room->notifyPrivchg(event);
-    emit privchged(event);
+    emit privChg(event);
 }
 
 void dAmnSession::handlePrivUpdate(dAmnPacket& packet, dAmnChatroom* room)
@@ -532,6 +569,72 @@ void dAmnSession::handlePrivUpdate(dAmnPacket& packet, dAmnChatroom* room)
     PrivUpdateEvent event (this, packet);
 
     room->notifyPrivUpdate(event);
-    emit privUpdated(event);
+    emit privUpdate(event);
 }
 
+void dAmnSession::handlePrivMove(dAmnPacket& packet, dAmnChatroom* room)
+{
+    PrivMoveEvent event (this, packet);
+
+    room->notifyPrivMove(event);
+    emit privMove(event);
+}
+
+void dAmnSession::handlePrivRemove(dAmnPacket& packet, dAmnChatroom* room)
+{
+    PrivRemoveEvent event (this, packet);
+
+    room->notifyPrivRemove(event);
+    emit privRemove(event);
+}
+
+void dAmnSession::handlePrivShow(dAmnPacket& packet, dAmnChatroom* room)
+{
+    PrivShowEvent event (this, packet);
+
+    room->notifyPrivShow(event);
+    emit privShow(event);
+}
+
+void dAmnSession::handlePrivUsers(dAmnPacket& packet, dAmnChatroom* room)
+{
+    PrivUsersEvent event (this, packet);
+
+    room->notifyPrivUsers(event);
+    emit privUsers(event);
+}
+
+void dAmnSession::handleSendError(dAmnPacket& packet)
+{
+    SendError err (this, packet);
+
+    emit sendError(err);
+}
+
+void dAmnSession::handleKickError(dAmnPacket& packet)
+{
+    KickError err (this, packet);
+
+    emit kickError(err);
+}
+
+void dAmnSession::handleGetError(dAmnPacket& packet)
+{
+    GetError err (this, packet);
+
+    emit getError(err);
+}
+
+void dAmnSession::handleSetError(dAmnPacket& packet)
+{
+    SetError err (this, packet);
+
+    emit setError(err);
+}
+
+void dAmnSession::handleKillError(dAmnPacket& packet)
+{
+    KillError err (this, packet);
+
+    emit killError(err);
+}

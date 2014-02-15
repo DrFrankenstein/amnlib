@@ -21,6 +21,7 @@
 #include "damnsession.h"
 #include "damnchatroom.h"
 #include "damnprivclass.h"
+#include "damnrichtext.h"
 #include "damnpacket.h"
 #include "damnuser.h"
 #include "events.h"
@@ -29,6 +30,7 @@
 #include <QStringList>
 #include <QHash>
 #include <QRegExp>
+#include <algorithm>
 
 dAmnChatroom::dAmnChatroom(dAmnSession* parent, const QString& roomstring)
     : dAmnObject(parent)
@@ -88,7 +90,7 @@ const QString& dAmnChatroom::name() const
 {
     return this->_name;
 }
-const QString& dAmnChatroom::title() const
+const dAmnRichText& dAmnChatroom::title() const
 {
     return this->_title;
 }
@@ -96,7 +98,7 @@ const QDateTime& dAmnChatroom::titleDate() const
 {
     return this->_titledate;
 }
-const QString& dAmnChatroom::topic() const
+const dAmnRichText& dAmnChatroom::topic() const
 {
     return this->_topic;
 }
@@ -113,13 +115,15 @@ dAmnChatroomIdentifier dAmnChatroom::id() const
     return dAmnChatroomIdentifier(this->session(), this->_type, this->_name);
 }
 
-void dAmnChatroom::setTopic(const QString& newtopic)
+void dAmnChatroom::updateTopic(const QString& newtopic)
 {
-    this->_topic = newtopic;
+    this->_topic = dAmnRichText(newtopic);
+    MNLIB_DEBUG("Topic updated for %s: %s", qPrintable(this->id().toIdString()), qPrintable(this->_topic.toPlain()));
 }
-void dAmnChatroom::setTitle(const QString& newtitle)
+void dAmnChatroom::updateTitle(const QString& newtitle)
 {
-    this->_title = newtitle;
+    this->_title = dAmnRichText(newtitle);
+    MNLIB_DEBUG("Title updated for %s: %s", qPrintable(this->id().toIdString()), qPrintable(this->_title.toPlain()));
 }
 
 void dAmnChatroom::addPrivclass(dAmnPrivClass* pc)
@@ -184,7 +188,7 @@ void dAmnChatroom::processMembers(const QString& data)
 {
     QString members = data;
     QTextStream reader (&members);
-    QString name, line, pc, props;
+    QString name, pc, props;
 
     while(!reader.atEnd())
     {
@@ -369,13 +373,51 @@ void dAmnChatroom::removeMember(const QString& name)
     session()->cleanupUser(name);
 }
 
+void dAmnChatroom::moveMember(dAmnUser* user, dAmnPrivClass* src, dAmnPrivClass* dst)
+{
+    src->removeUser(user);
+    dst->addUser(user);
+
+    this->_membersToPc.insert(user->name(), dst);
+}
+
+uint dAmnChatroom::moveAll(dAmnPrivClass* src, dAmnPrivClass* dst)
+{
+    dAmnUser* user;
+    uint count = 0;
+    foreach(user, src->users())
+    {
+        this->moveMember(user, src, dst);
+        count++;
+    }
+
+    return count;
+}
+
+dAmnPrivClass* dAmnChatroom::defaultPrivClass()
+{   // Apparently, there are exceptions to this, though I can't find a straight answer in the Botdom Docs wiki.
+    // In fact, I'm sure it's wrong.
+    auto pcit = std::find_if(this->_privclasses.begin(), this->_privclasses.end(),
+                             [](dAmnPrivClass* pc) { return pc->orderValue() == 25; } );
+
+    if(pcit == this->_privclasses.end())
+    {
+        MNLIB_CRIT("No default privclass found in #%s!", qPrintable(this->_name));
+        return NULL;
+    }
+
+    return *pcit;
+}
+
 void dAmnChatroom::notifyMessage(const MsgEvent& event)
 {
+    emit message(event);
     emit message(event.userName(), event.message());
 }
 
 void dAmnChatroom::notifyAction(const ActionEvent& event)
 {
+    emit action(event);
     emit action(event.userName(), event.action());
 }
 
@@ -387,12 +429,14 @@ void dAmnChatroom::notifyJoin(const JoinEvent& event)
 
     this->addMember(event.userName(), pcname, event.properties());
 
+    emit joined(event);
     emit joined(event.userName());
 }
 
 void dAmnChatroom::notifyPart(const PartEvent& event)
 {
     this->removeMember(event.userName());
+    emit parted(event);
     emit parted(event.userName(), event.reason());
 }
 
@@ -408,12 +452,14 @@ void dAmnChatroom::notifyPrivchg(const PrivchgEvent& event)
     newpc->addUser(user);
     this->_membersToPc.insert(userName, newpc);
 
+    emit privchg(event);
     emit privchg(userName, event.adminName(), event.privClass());
 }
 
 void dAmnChatroom::notifyKick(const KickEvent& event)
 {
     this->removeMember(event.userName());
+    emit kicked(event);
     emit kicked(event.userName(), event.kickerName(), event.reason());
 }
 
@@ -429,18 +475,65 @@ void dAmnChatroom::notifyPrivUpdate(const PrivUpdateEvent& event)
         if(pc) break;
         else
         {
-            MNLIB_WARN("Recieved update on unknown privclass %s in %s. Creating it.");
-        }
+			MNLIB_WARN("Recieved update on unknown privclass %s in #%s. Creating it.", event.privClass(), this->_name);
+        }	// pc missing; fall through to create
 
-    default:
     case PrivUpdateEvent::create:
         pc = new dAmnPrivClass(this, event.privClass(), 0);
         break;
 
+	default:
 	case PrivUpdateEvent::unknown: qt_noop();
     }
 
     pc->apply(event.privString());
+
+    emit privUpdate(event);
+}
+
+void dAmnChatroom::notifyPrivMove(const PrivMoveEvent& event)
+{
+    dAmnPrivClass* pc = this->_privclasses.value(event.oldName());
+
+    switch(event.action())
+    {
+    case PrivMoveEvent::rename:
+        pc->setName(event.newName());
+
+    case PrivMoveEvent::move:
+    {
+        dAmnPrivClass* dest = this->_privclasses.value(event.newName());
+        uint count = this->moveAll(pc, dest);
+        if(count != event.usersAffected())
+            MNLIB_CRIT("Users affected mismatch while moving from privclass %s to %s.", qPrintable(pc->name()), qPrintable(dest->name()));
+    }
+    }
+
+    emit privMove(event);
+}
+
+void dAmnChatroom::notifyPrivRemove(const PrivRemoveEvent& event)
+{
+    dAmnPrivClass* deleted = this->_privclasses.value(event.privClass()),
+                 * def = this->defaultPrivClass();
+    // TODO: Handle def not found. Really.
+    uint count = this->moveAll(deleted, def);
+    if(count != event.usersAffected())
+        MNLIB_CRIT("Users affected mismatch while deleting privclass %s.", qPrintable(deleted->name()));
+
+    deleted->deleteLater();
+
+    emit privRemove(event);
+}
+
+void dAmnChatroom::notifyPrivShow(const PrivShowEvent& event)
+{
+    emit privShow(event);
+}
+
+void dAmnChatroom::notifyPrivUsers(const PrivUsersEvent& event)
+{
+    emit privUsers(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

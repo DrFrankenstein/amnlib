@@ -23,6 +23,7 @@
 #include "mnlib_global.h"
 #include "damnobject.h"
 #include "evtfwd.h"
+#include "damnrichtext.h"
 
 #include <QString>
 #include <QDateTime>
@@ -37,7 +38,6 @@ class dAmnSession;
 class dAmnPrivClass;
 class dAmnUser;
 class dAmnPacket;
-class dAmnRichText;
 
 class MNLIBSHARED_EXPORT dAmnChatroom : public dAmnObject
 {
@@ -54,15 +54,15 @@ public:
 
     Type type() const;
     const QString& name() const;
-    const QString& title() const;
+    const dAmnRichText& title() const;
     const QDateTime& titleDate() const;
-    const QString& topic() const;
+    const dAmnRichText& topic() const;
     const QDateTime& topicDate() const;
     QList<dAmnPrivClass*> privclasses() const;
     dAmnChatroomIdentifier id() const;
 
-    void setTopic(const QString& newtopic);
-    void setTitle(const QString& newtitle);
+    void updateTopic(const QString& newtopic);
+    void updateTitle(const QString& newtitle);
 
     void addPrivclass(dAmnPrivClass* pc);
     void removePrivclass(const QString& name);
@@ -99,20 +99,40 @@ public:
     void notifyPrivchg(const PrivchgEvent& event);
     void notifyKick(const KickEvent& event);
     void notifyPrivUpdate(const PrivUpdateEvent& event);
+    void notifyPrivMove(const PrivMoveEvent& event);
+    void notifyPrivRemove(const PrivRemoveEvent& event);
+    void notifyPrivShow(const PrivShowEvent& event);
+    void notifyPrivUsers(const PrivUsersEvent& event);
 
 signals:
+    void message(const MsgEvent& event);
     void message(const QString& user, const dAmnRichText& content);
+    void action(const ActionEvent& event);
     void action(const QString& user, const dAmnRichText& content);
 
+    void joined(const JoinEvent& event);
     void joined(const QString& user);
+    void parted(const PartEvent& event);
     void parted(const QString& user, const QString& reason);
 
+    void privchg(const PrivchgEvent& event);
     void privchg(const QString& user, const QString& by, const QString& pc);
+    void kicked(const KickEvent& event);
     void kicked(const QString& user, const QString& by, const dAmnRichText& reason);
+
+    void privUpdate(const PrivUpdateEvent& event);
+    void privMove(const PrivMoveEvent& event);
+    void privRemove(const PrivRemoveEvent& event);
+    void privShow(const PrivShowEvent& event);
+    void privUsers(const PrivUsersEvent& event);
+
+    void gotKicked(const KickedEvent& event);
+    void gotKicked(const QString& by, const QString& reason);
 
 private:
     Type _type;
-    QString _name, _title, _topic;
+    QString _name;
+    dAmnRichText _title, _topic;
     QDateTime _titledate, _topicdate;
     QHash<QString, dAmnPrivClass*> _privclasses;
     QHash<QString, dAmnPrivClass*> _membersToPc;
@@ -122,6 +142,10 @@ private:
     void addMember(const QString& name, const QString& pcname, int usericon, const QChar& symbol, const QString& realname, const QString& type_name, const QString& gpc);
     void addMember(const QString& name, const QString& pcname, const QString& props);
     void removeMember(const QString& name);
+
+    void moveMember(dAmnUser* user, dAmnPrivClass* src, dAmnPrivClass* dst);
+    uint moveAll(dAmnPrivClass* src, dAmnPrivClass* dst);
+    dAmnPrivClass* defaultPrivClass();
 };
 
 struct MNLIBSHARED_EXPORT dAmnChatroomIdentifier // NOT a QObject.

@@ -25,7 +25,9 @@
 #include <QHash>
 #include <QTextStream>
 
-class dAmnRichText
+#include "mnlib_global.h"
+
+class MNLIBSHARED_EXPORT dAmnRichText
 {
 public:
     enum ElementType
@@ -59,9 +61,9 @@ private:
     static ElementType getType(const QString &name);
 
     void parse(QString str);
-    QString nextLump(QTextStream& parser);
-    void parseText(QTextStream& parser, Element& el);
-    void parseTablump(QTextStream& parser, Element& el, const QString& typestr);
+    bool parseText(QTextStream& parser, Element& el);
+    void parseTablump(QTextStream& parser, Element& el);
+    QString nextLump(QTextStream& parser, bool typestr = false);
 
     static QString htmlEncode(QString text);
 

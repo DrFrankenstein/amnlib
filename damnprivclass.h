@@ -63,8 +63,10 @@ public:
     void apply(QString command);
 
     const QString& name() const;
+    void setName(const QString& name);
     uint orderValue() const;
     void setOrderValue(uint order);
+    const QSet<dAmnUser*>& users() const;
 
     bool joinPriv() const;
     bool titlePriv() const;

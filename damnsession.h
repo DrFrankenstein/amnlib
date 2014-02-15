@@ -115,23 +115,22 @@ signals:
     void gotProperty(const PropertyEvent& event);
     void gotWhois(const WhoisEvent& event);
 
-    void gotMsg(const MsgEvent& event);
-    void gotAction(const ActionEvent& event);
-
-    void peerJoined(const JoinEvent& event);
-    void peerParted(const PartEvent& event);
-    void peerKicked(const KickEvent& event);
-
-    void privchged(const PrivchgEvent& event);
-    void privUpdated(const PrivUpdateEvent& event);
-    void privMoved(const PrivMoveEvent& event);
-    void privRemoved(const PrivRemoveEvent& event);
-
-    void gotPrivShow(const PrivShowEvent& event);
-    void gotPrivUsers(const PrivUsersEvent& event);
-
+    void message(const MsgEvent& event);
+    void action(const ActionEvent& event);
     void kicked(const KickedEvent& event);
     void disconnected(const DisconnectEvent& event);
+
+    void join(const JoinEvent& event);
+    void part(const PartEvent& event);
+    void kick(const KickEvent& event);
+
+    void privChg(const PrivchgEvent& event);
+    void privUpdate(const PrivUpdateEvent& event);
+    void privMove(const PrivMoveEvent& event);
+    void privRemove(const PrivRemoveEvent& event);
+
+    void privShow(const PrivShowEvent& event);
+    void privUsers(const PrivUsersEvent& event);
 
     void sendError(const SendError& error);
     void kickError(const KickError& error);
@@ -153,6 +152,8 @@ private:
 
     void handleJoin(dAmnPacket& packet);
     void handlePart(dAmnPacket& packet);
+    void handleKick(dAmnPacket& packet);
+    void handleDisconnect(dAmnPacket& packet);
 
     void handlePing();
 
@@ -175,9 +176,6 @@ private:
 
     void handlePrivShow(dAmnPacket& packet, dAmnChatroom* room);
     void handlePrivUsers(dAmnPacket& packet, dAmnChatroom* room);
-
-    void handkeKick(dAmnPacket& packet);
-    void handleDisconnect(dAmnPacket& packet);
 
     void handleSendError(dAmnPacket& packet);
     void handleKickError(dAmnPacket& packet);

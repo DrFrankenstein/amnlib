@@ -3,7 +3,7 @@
 # -------------------------------------------------
 QT += network \
     script
-QT -= gui
+QT -= widget
 TARGET = mnlib
 TEMPLATE = lib
 DEFINES += MNLIB_LIBRARY

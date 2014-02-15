@@ -46,28 +46,52 @@ void dAmnRichText::parse(QString str)
     while(!parser.atEnd())
     {
         Element el;
-        QString lump = nextLump(parser);
-        if(lump.startsWith('&'))
+
+        if(isTablump)
         {
-            isTablump = true;
-            parseTablump(parser, el, lump.mid(1));
+            parseTablump(parser, el);
+            isTablump = false;
         }
         else
         {
-            el.type = text;
-
-            if(!isTablump) lump.prepend('\t');
-            el.args.append(lump);
-            this->sizehint += lump.size();
-            isTablump = false;
+            isTablump = parseText(parser, el);
         }
 
         this->tablumps.append(el);
     }
 }
 
-void dAmnRichText::parseTablump(QTextStream& parser, Element& el, const QString &typestr)
+bool dAmnRichText::parseText(QTextStream& parser, Element& el)
 {
+    el.type = text;
+    char c;
+    QString t;
+    while(!parser.atEnd())
+    {
+        parser >> c;
+        if(c == '&')
+        {
+            el.args.append(t);
+            return true;
+        }
+        t.append(c);
+    }
+
+    el.args.append(t);
+    return false;
+}
+
+void dAmnRichText::parseTablump(QTextStream& parser, Element& el)
+{
+    QString typestr = nextLump(parser, true);
+
+    if(typestr.endsWith(';'))
+    {   // HTML entity.
+        el.type = text;
+        el.args.append(typestr);
+        return;
+    }
+
     ElementType type = getType(typestr);
     switch(type)
     {
@@ -106,7 +130,7 @@ void dAmnRichText::parseTablump(QTextStream& parser, Element& el, const QString 
     el.type = type;
 }
 
-QString dAmnRichText::nextLump(QTextStream& parser)
+QString dAmnRichText::nextLump(QTextStream& parser, bool typestr)
 {
     QString lump;
     while(!parser.atEnd())
@@ -114,11 +138,20 @@ QString dAmnRichText::nextLump(QTextStream& parser)
         QChar c;
         parser >> c;
         if(c == '\t')
-            return lump;
+            break;
         lump.append(c);
+        if(typestr && c == ';')
+            break;
     }
 
-    return QString();
+    if(typestr)
+    {
+        return '&' + lump;
+    }
+    else
+    {
+        return lump;
+    }
 }
 
 QHash<QString, dAmnRichText::ElementType> dAmnRichText::map;

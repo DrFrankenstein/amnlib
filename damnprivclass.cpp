@@ -122,6 +122,11 @@ const QString& dAmnPrivClass::name() const
     return this->_name;
 }
 
+void dAmnPrivClass::setName(const QString& name)
+{
+    this->_name = name;
+}
+
 uint dAmnPrivClass::orderValue() const
 {
     return this->_order;
@@ -130,6 +135,11 @@ uint dAmnPrivClass::orderValue() const
 void dAmnPrivClass::setOrderValue(uint order)
 {
     this->_order = order;
+}
+
+const QSet<dAmnUser*>& dAmnPrivClass::users() const
+{
+    return this->_users;
 }
 
 bool dAmnPrivClass::joinPriv() const { return this->_joinpriv; }
