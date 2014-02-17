@@ -289,7 +289,6 @@ QString dAmnRichText::toPlain() const
 QString dAmnRichText::toHtml() const
 {
     QString result;
-    result.reserve(this->sizehint);
 
     Element el;
     foreach(el, this->tablumps)
@@ -408,7 +407,6 @@ QString dAmnRichText::toHtml() const
 QString dAmnRichText::toDAml() const
 {
     QString result;
-    result.reserve(this->sizehint);
 
     Element el;
     foreach(el, this->tablumps)
