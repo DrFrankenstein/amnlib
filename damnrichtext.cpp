@@ -175,7 +175,7 @@ void dAmnRichText::initMap()
     map.insert("&code", start_code);
     map.insert("&/code", end_code);
     map.insert("&bcode", start_bcode);
-    map.insert("&/bode", end_bcode);
+    map.insert("&/bcode", end_bcode);
     map.insert("&li", start_li);
     map.insert("&/li", end_li);
     map.insert("&ul", start_ul);
@@ -277,7 +277,7 @@ QString dAmnRichText::toPlain() const
         case avatar: result += QString("[%1]").arg(el.args[0]); break; // name
         case emote: result += el.args[0]; break;
         case thumb:
-            result += QString("[%1: http://fav.me/%2 ]")
+            result += QString("[%1: http://fav.me/%2]")
                         .arg(el.args[1]).arg(el.args[0]);  // title, id
             break;
 
