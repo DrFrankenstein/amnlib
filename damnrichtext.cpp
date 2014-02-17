@@ -217,8 +217,6 @@ QLinkedList<dAmnRichText::Element>::const_iterator dAmnRichText::parsedTablumps(
 QString dAmnRichText::toPlain() const
 {
     QString result;
-    result.reserve(this->sizehint);
-
     QStack<Element> state;
     QStack<uint> listcounts;
 

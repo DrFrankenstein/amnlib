@@ -52,7 +52,6 @@ public:
     };
 
 private:
-    int sizehint;
     QLinkedList<Element> tablumps;
 
     static QHash<QString, ElementType> map;
