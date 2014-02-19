@@ -32,6 +32,7 @@ class MNLIBSHARED_EXPORT dAmnRichText
 public:
     enum ElementType
     {
+        unknown,
         text,
         start_b, end_b, start_i, end_i, start_u, end_u,
         start_sub, end_sub, start_sup, end_sup,
