@@ -3,7 +3,7 @@
 # -------------------------------------------------
 QT += network \
     script
-QT -= widget
+QT -= widgets
 TARGET = mnlib
 TEMPLATE = lib
 DEFINES += MNLIB_LIBRARY
@@ -39,7 +39,7 @@ HEADERS += damnsession.h \
 debug:DEFINES += MNLIB_DEBUG_BUILD
 else:DEFINES += MNLIB_RELEASE_BUILD
 
-VERSION = 0.1.1201
+VERSION = 0.1.1402
 VER_MAJ = 0
 VER_MIN = 1
-VER_PAT = 1201
+VER_PAT = 1402
